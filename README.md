@@ -3,7 +3,7 @@
 adipose tissue identification in histological images of lyophilized silk 
 sponge implants**
 
-![abstract](Figures/Graphical_Abstract.png)
+![abstract](Figures/Graphical_Abstract_Background.png)
 
 _Joshua Peeples, Julie Jameson, Nisha Kotta, Whitney Stoppel, and Alina Zare_
 
