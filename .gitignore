@@ -1,0 +1,10 @@
+# Ignore datasets
+Datasets/SFBHI/
+Datasets/GlaS/
+
+
+# Ignore saved model
+HPG_Results/
+New_Metrics/
+
+
