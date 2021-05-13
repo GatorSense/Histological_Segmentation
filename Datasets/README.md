@@ -58,14 +58,14 @@ and follow these instructions:
 3. The structure of the `GlaS` folder is as follows:
 ```
 └── root dir
-    ├── folds   // Contains folders of test images for each class.
+    ├── folds   // Contains folders of training and test images.
         ├── split_0
             ├── fold_0
             ├── fold_1
             ├── fold_2
             ├── fold_3
             ├── fold_4
-    ├── grade // Contains folders of training images for each class.  
+    ├── grade.csv // Contains information for each image.  
 ```
 ## <a name="CitingGlaS"></a>Citing GlaS
 
