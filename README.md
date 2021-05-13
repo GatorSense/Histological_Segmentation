@@ -66,6 +66,7 @@ https://github.com/GatorSense/Histological_Segmetation
 └── root dir
     ├── demo.py   //Run this. Main demo file.
     ├── Demo_Parameters.py // Parameters file for demo.
+    ├── Labeled Image Reference Length.csv // Adipose tissue information for SFBHI.
     ├── Prepare_Data.py  // Load data for demo file.
     ├── View_Results.py // Run this after demo to view saved results.
     └── Utils  //utility functions
