@@ -6,7 +6,7 @@ to ensure the code works. If any of these datasets are used,
 please cite the appropiate sources (papers, repositories, etc.) as mentioned
 on the webpages and provided here.
 
-##  Silk Fibroin Biomaterial Histology Images(SFBHI) [[`BibTeX`](#CitingSFBHI)]
+##  Silk Fibroin Biomaterial Histology Images (SFBHI) [[`BibTeX`](#CitingSFBHI)]
 
 Please download the [`SFBHI_dataset`](https://drive.google.com/drive/folders/1ZYGR7HxrJFIk5V9UIUYWWjcJuAyYkMxA?usp=sharing) 
 and follow these instructions:
