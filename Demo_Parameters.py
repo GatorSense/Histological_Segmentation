@@ -8,7 +8,7 @@ demo.py
 """
 import numpy as np
 
-def Parameters():
+def Parameters(model='JOSHUA+'):
     ######## ONLY CHANGE PARAMETERS BELOW ########
     #Flag for if results are to be saved out
     #Set to True to save results out and False to not save results
@@ -16,11 +16,11 @@ def Parameters():
     
     #Select model, options include:
     # 'UNET'
-    # 'UNET+'
     # 'Attention UNET'
+    # 'UNET+'
     # 'JOSHUA'
     # 'JOSHUA+'
-    model = 'JOSHUA+'
+    model = model
     
     seg_models = {'UNET': 0,'UNET+': 1, 'Attention UNET': 2, 'JOSHUA': 3, 'JOSHUA+': 4}
     model_selection = {0: 1, 1: 1, 2: 4, 3: 1, 4: 1}
@@ -52,6 +52,12 @@ def Parameters():
     #Select dataset. Set to number of desired segmentation dataset
     data_selection = 1
     Dataset_names = { 1: 'SFBHI', 2: 'GlaS'}
+    
+    #If SFBHI, generate images with adipose tissue graphs
+    if data_selection == 1:
+        show_fat = True
+    else:
+        show_fat = False
     
     #Number of input channels for each dataset (for now, all are 3 channels-RGB)
     channels = 3
@@ -163,14 +169,11 @@ def Parameters():
         
     #Number of classes in each dataset
     num_classes = {'SFBHI': 1, 
-                 'GlaS': 1
-                 }
-    
+                 'GlaS': 1}
     
     #Number of runs and/or splits for each dataset (5 fold)
     Splits = {'SFBHI': 5, 
-              'GlaS': 5
-                 }
+              'GlaS': 5}
     
     Dataset = Dataset_names[data_selection]
     imgs_dir = img_dirs[Dataset]
@@ -188,9 +191,6 @@ def Parameters():
     else: #Base UNET model
         Hist_model_name = None
         
-    if use_attention and Hist_model_name is not None:
-        Hist_model_name = Hist_model_name + '_Plus'
-    
     #Return dictionary of parameters
     Network_parameters = {'save_results': save_results,'folder': folder, 
                           'Dataset': Dataset, 'imgs_dir': imgs_dir,
@@ -216,5 +216,5 @@ def Parameters():
                           'pool_locations': pool_locations, 'bilinear': bilinear,
                           'random_state': random_state, 'save_cp': save_cp,
                           'save_epoch': save_epoch, 'use_attention': use_attention,
-                          'augment': augment, 'rotate': rotate}
+                          'augment': augment, 'rotate': rotate, 'show_fat': show_fat}
     return Network_parameters

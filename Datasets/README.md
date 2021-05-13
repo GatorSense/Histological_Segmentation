@@ -6,106 +6,101 @@ to ensure the code works. If any of these datasets are used,
 please cite the appropiate sources (papers, repositories, etc.) as mentioned
 on the webpages and provided here.
 
-##  Describable Texture Dataset (DTD) [[`BibTeX`](#CitingDTD)]
+##  Silk Fibroin Biomaterial Histology Images(SFBHI) [[`BibTeX`](#CitingSFBHI)]
 
-Please download the [`DTD dataset`](https://www.robots.ox.ac.uk/~vgg/data/dtd/) 
+Please download the [`SFBHI_dataset`](https://drive.google.com/drive/folders/1ZYGR7HxrJFIk5V9UIUYWWjcJuAyYkMxA?usp=sharing) 
 and follow these instructions:
 
-1. Download and unzip the file
-2. Name the folder `DTD`
-3. The structure of the `DTD` folder is as follows:
+1. Download and unzip the folder `SFBHI`
+2. The structure of the `SFBHI` folder is as follows:
 ```
 └── root dir
-    ├── images   // Contains folders of images for each class.
-    ├── imdb // Not used.
-    ├── labels  // Contains training,validation, and test splits.   
+    ├── Images   // Contains images and training/validation folds.
+        ├── folds
+            ├── split_0
+                ├── fold_0
+                ├── fold_1
+                ├── fold_2
+                ├── fold_3
+                ├── fold_4
+    ├── Labels  // Contains labels for each training/validation fold.   
 ```
-## <a name="CitingDTD"></a>Citing DTD
+## <a name="CitingSFBHI"></a>Citing SFBHI
 
-If you use the DTD dataset, please cite the following reference using the following entry.
+If you use the SFBHI dataset, please cite the following reference using the following entry.
 
 **Plain Text:**
 
-Cimpoi, M., Maji, S., Kokkinos, I., Mohamed, S., & Vedaldi, A. (2014). 
-Describing textures in the wild. In Proceedings of the IEEE Conference on 
-Computer Vision and Pattern Recognition (pp. 3606-3613).
+Peeples, J., Jameson, J., Kotta, N., Stoppel, W., & Zare, A. (2021). Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
+adipose tissue identification in histological images of lyophilized silk 
+sponge implants. arXiv preprint TBD.
 
 **BibTex:**
 ```
-@InProceedings{cimpoi14describing,
-	     Author    = {M. Cimpoi and S. Maji and I. Kokkinos and S. Mohamed and and A. Vedaldi},
-	     Title     = {Describing Textures in the Wild},
-	     Booktitle = {Proceedings of the {IEEE} Conf. on Computer Vision and Pattern Recognition ({CVPR})},
-	     Year      = {2014}}
-```
-## Extension of the Ground Terrain in Outdoor Scenes (GTOS-mobile) [[`BibTeX`](#CitingGTOS_m)]
-
-Please download the 
-[`GTOS-mobile dataset`](https://github.com/jiaxue1993/Deep-Encoding-Pooling-Network-DEP-) 
-and follow these instructions:
-
-1. Download and unzip the file
-2. Name the folder `gtos-mobile`
-3. The structure of the `gtos-mobile` folder is as follows:
-```
-└── root dir
-    ├── test   // Contains folders of test images for each class.
-    ├── train // Contains folders of training images for each class.  
-```
-## <a name="CitingGTOS_m"></a>Citing GTOS-mobile
-
-If you use the GTOS-mobile dataset, please cite the following reference using the following entry.
-
-**Plain Text:**
-
-Xue, J., Zhang, H., & Dana, K. (2018). Deep texture manifold for ground 
-terrain recognition. In Proceedings of the IEEE Conference on Computer Vision 
-and Pattern Recognition (pp. 558-567).
-
-**BibTex:**
-```
-@inproceedings{xue2018deep,
-  title={Deep texture manifold for ground terrain recognition},
-  author={Xue, Jia and Zhang, Hang and Dana, Kristin},
-  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
-  pages={558--567},
-  year={2018}
+@article{peeples2021jointly,
+  title={Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
+adipose tissue identification in histological images of lyophilized silk 
+sponge implants},
+  author={Peeples, Joshua and Jameson, Julie and Kotta, Nisha, and Stoppel, Whitney, and Zare, Alina},
+  journal={arXiv preprint TBD},
+  year={2021}
 }
 ```
-## Subset of Material in Context (MINC-2500) [[`BibTeX`](#CitingMINC)]
+## Gland Segmentation in Colon Histology Images (GlaS) [[`BibTeX`](#CitingGlaS)]
 
 Please download the 
-[`MINC-2500 dataset`](http://opensurfaces.cs.cornell.edu/publications/minc/) 
+[`GlaS dataset`](https://warwick.ac.uk/fac/cross_fac/tia/data/glascontest/download/) 
 and follow these instructions:
 
 1. Download and unzip the file
-2. Name the folder `minc-2500`
-3. The structure of the `minc-2500` folder is as follows:
+2. Name the folder `GlaS`
+3. The structure of the `GlaS` folder is as follows:
 ```
 └── root dir
-    ├── images   // Contains folders of images for each class.
-    ├── labels // Contains training,validation, and test splits.
-    ├── categories.txt  // Class names for dataset
-    ├── README.txt  // README file from MINC-2500 curators
-       
+    ├── folds   // Contains folders of test images for each class.
+        ├── split_0
+            ├── fold_0
+            ├── fold_1
+            ├── fold_2
+            ├── fold_3
+            ├── fold_4
+    ├── grade // Contains folders of training images for each class.  
 ```
-## <a name="CitingMINC"></a>Citing MINC-2500
+## <a name="CitingGlaS"></a>Citing GlaS
 
-If you use the MINC-2500 dataset, please cite the following reference using the following entry.
+If you use the GlaS dataset, please cite the following references using the following entry.
 
 **Plain Text:**
 
-Bell, S., Upchurch, P., Snavely, N., & Bala, K. (2015). Material recognition 
-in the wild with the materials in context database. In Proceedings of the IEEE 
-conference on computer vision and pattern recognition (pp. 3479-3487).
+Sirinukunwattana, K., Pluim, J. P., Chen, H., Qi, X., Heng, P. A., Guo, 
+Y. B., ... & Rajpoot, N. M. (2017). Gland segmentation in colon histology 
+images: The glas challenge contest. Medical image analysis, 35, 489-502.
+
+Sirinukunwattana, K., Snead, D. R., & Rajpoot, N. M. (2015). A stochastic 
+polygons model for glandular structures in colon histology images. 
+IEEE transactions on medical imaging, 34(11), 2366-2378
 
 **BibTex:**
 ```
-@inproceedings{bell2015material,
-  title={Material recognition in the wild with the materials in context database},
-  author={Bell, Sean and Upchurch, Paul and Snavely, Noah and Bala, Kavita},
-  booktitle={Proceedings of the IEEE conference on computer vision and pattern recognition},
-  pages={3479--3487},
-  year={2015}
+@article{sirinukunwattana2017gland,
+  title={Gland segmentation in colon histology images: The glas challenge contest},
+  author={Sirinukunwattana, Korsuk and Pluim, Josien PW and Chen, Hao and Qi, Xiaojuan and Heng, Pheng-Ann and Guo, Yun Bo and Wang, Li Yang and Matuszewski, Bogdan J and Bruni, Elia and Sanchez, Urko and others},
+  journal={Medical image analysis},
+  volume={35},
+  pages={489--502},
+  year={2017},
+  publisher={Elsevier}
 }
+
+@article{sirinukunwattana2015stochastic,
+  title={A stochastic polygons model for glandular structures in colon histology images},
+  author={Sirinukunwattana, Korsuk and Snead, David RJ and Rajpoot, Nasir M},
+  journal={IEEE transactions on medical imaging},
+  volume={34},
+  number={11},
+  pages={2366--2378},
+  year={2015},
+  publisher={IEEE}
+}
+
 ```

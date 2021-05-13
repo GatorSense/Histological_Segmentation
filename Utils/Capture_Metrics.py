@@ -20,7 +20,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from View_Results_Parameters import Parameters
+from Demo_Parameters import Parameters
 
 def Generate_Dir_Name(split,Network_parameters):
     
@@ -44,22 +44,14 @@ def Generate_Dir_Name(split,Network_parameters):
 
 def load_metrics(sub_dir, metrics, phase = 'val'):
     
-    # #Load metrics
-    # if test: #Loss variable is tensor, causes issue if no GPU
-    #     temp_file = open(sub_dir+'test_metrics.pkl', 'rb')
-    # else:
-    #     temp_file = open(sub_dir+'val_metrics.pkl', 'rb')
-    
-    temp_file = open(sub_dir + 'new_{}_metrics.pkl'.format(phase), 'rb')
-    # temp_file = open(sub_dir + '{}_metrics.pkl'.format(phase), 'rb')
+    #Load metrics
+    temp_file = open(sub_dir + '{}_metrics.pkl'.format(phase), 'rb')
     temp_metrics = pickle.load(temp_file)
     temp_file.close()
     
     #Return max value for each metric (unless loss or inference time)
     metric_vals = np.zeros(len(metrics))
     
-    #Get argmax of dice coefficient and save metrics corresponding to this value
-    # max_index = np.argmax(temp_metrics['dice'])
     count = 0
     for metric in metrics.keys():
         metric_vals[count] = temp_metrics[metric]
@@ -82,11 +74,9 @@ def add_to_excel(table,writer,model_names,metrics_names,fold=1,overall=False):
         DF.to_excel(writer,sheet_name='Fold_{}'.format(fold+1))
            
 #Compute desired metrics and save to excel spreadsheet
-def Get_Metrics(metrics,seg_models,model_selection,hist_skips,hist_pools,attention,folds=5):
+def Get_Metrics(metrics,seg_models,folds=5):
 
     #Set names of models
-    # pdb.set_trace()
-    # print(seg_models.values())
     
     model_names = []
     metric_names = []
@@ -96,12 +86,10 @@ def Get_Metrics(metrics,seg_models,model_selection,hist_skips,hist_pools,attenti
         metric_names.append(metrics[key])
         
     #Intialize validation and test arrays
-    train_table = np.zeros((len(seg_models),len(metrics),folds))
     val_table = np.zeros((len(seg_models),len(metrics),folds))
     test_table = np.zeros((len(seg_models),len(metrics),folds))
 
     _, fig_dir = Generate_Dir_Name(0, Parameters())
-    # train_writer = pd.ExcelWriter(fig_dir+'Train_Metrics.xlsx', engine='xlsxwriter')
     val_writer = pd.ExcelWriter(fig_dir+'Val_Metrics.xlsx', engine='xlsxwriter')
     test_writer = pd.ExcelWriter(fig_dir+'Test_Metrics.xlsx', engine='xlsxwriter')
     
@@ -109,22 +97,18 @@ def Get_Metrics(metrics,seg_models,model_selection,hist_skips,hist_pools,attenti
     for split in range(0,folds):
         for key in seg_models:
             
-            temp_params = Parameters(histogram_skips=hist_skips[key],
-                                     histogram_pools=hist_pools[key],
-                                     use_attention=attention[key],
-                                     model_selection=model_selection[key])
+            temp_params = Parameters(model_name=seg_models[key])
             
             #Get location of best weights
             sub_dir, _ = Generate_Dir_Name(split, temp_params)
             
             #Get metrics for validation and test
-            # train_table[key,:,split] = load_metrics(sub_dir,metrics,phase='train')
             val_table[key,:,split] = load_metrics(sub_dir,metrics,phase='val')
             test_table[key,:,split] = load_metrics(sub_dir, metrics,phase = 'test')
             
             print('Fold {}'.format(split+1))
+            
         #Add metrics to spreadsheet
-        # add_to_excel(train_table[:,:,split],train_writer,model_names,metric_names,fold=split)
         add_to_excel(val_table[:,:,split],val_writer,model_names,metric_names,fold=split)
         add_to_excel(test_table[:,:,split],test_writer,model_names,metric_names,fold=split)
     

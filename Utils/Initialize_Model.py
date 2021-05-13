@@ -8,13 +8,10 @@ Created on Wed Jul 15 10:57:56 2020
 from __future__ import print_function
 from __future__ import division
 
-## PyTorch dependencies
-from torchvision import models
-
 ## Local external libraries
-from Utils.Histogram_Model import JOSHUA
-from Utils.unet.unet_model import UNet
-from Utils.unet.attention_unet_model import AttUNet
+from .models.Histogram_Model import JOSHUA
+from .models.unet_model import UNet
+from .models.attention_unet_model import AttUNet
 
        
 def initialize_model(model_name, num_classes,Network_parameters):
@@ -41,7 +38,7 @@ def initialize_model(model_name, num_classes,Network_parameters):
                      feature_extraction = Network_parameters['feature_extraction'],
                      use_attention=Network_parameters['use_attention'])
     
-    #Attetion UNET model introduced in 2016
+    #Attetion UNET model introduced in 2018
     elif model_name == 'Attention_UNET':
             model = AttUNet(Network_parameters['channels'],num_classes,
                           bilinear = Network_parameters['bilinear'],

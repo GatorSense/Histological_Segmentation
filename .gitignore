@@ -1,7 +1,7 @@
 # Ignore datasets
-Datasets/SFBHI/
-Datasets/GlaS/
-
+Datasets/SFBHI/Images/*.jpeg
+Datasets/SFBHI/Labels/
+Datasets/GlaS/*.bmp
 
 # Ignore saved model
 HPG_Results/

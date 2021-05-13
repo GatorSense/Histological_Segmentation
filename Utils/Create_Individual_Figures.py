@@ -9,26 +9,17 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from operator import itemgetter 
 from sklearn.metrics import jaccard_score as jsc
-import pandas as pd
 import pdb
 
 ## PyTorch dependencies
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 
-
-from View_Results_Parameters import Parameters
+## Local external libraries
+from Demo_Parameters import Parameters
 from Utils.Initialize_Model import initialize_model
 from Utils.functional import *
-
-#mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
-def inverse_normalize(tensor, mean=(0,0,0), std=(1,1,1)):
-    for t, m, s in zip(tensor, mean, std):
-        t.mul_(s).add_(m)
-    return tensor
 
 def Generate_Dir_Name(split,Network_parameters):
     
@@ -51,8 +42,7 @@ def Generate_Dir_Name(split,Network_parameters):
     return dir_name, fig_dir_name
 
 def Generate_Images(dataloaders,mask_type,seg_models,device,split,
-                    max_imgs,hist_skips,hist_pools,attention,model_selection,num_classes,
-                    fat_df,show_fat=False,alpha=.35,class_name='Fat'):
+                    num_classes,fat_df,show_fat=False,alpha=.35,class_name='Fat'):
 
     model_names = []
     
@@ -61,10 +51,8 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
         model_names.append(seg_models[key])
     
     hausdorff_pytorch = HausdorffDistance()
-    for phase in ['test']:
-    #for phase in ['val','test']:
-        #Set the maximum number of images to visualize
-        temp_max_imgs = max_imgs[phase]
+    for phase in ['val','test']:
+    
         img_count = 0
         for batch in dataloaders[phase]:
            
@@ -77,22 +65,21 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
         
                 #Create figure for each image
                 temp_fig, temp_ax = plt.subplots(nrows=2,ncols=len(seg_models)+2,figsize=(16,8))
-                # plt.subplots_adjust(wspace=.4,hspace=.4)
                 
                 #Initialize fat array
                 if show_fat:
                     temp_fat = np.zeros(len(seg_models)+1)
                 
                 #Get conversion rate from pixels to fat
-                # pdb.set_trace()
                 if show_fat:
-                    temp_rate = fat_df.loc[fat_df['Image Name (.tif)']==idx[img]]['New Reference Length (um/px)'].iloc[-1]
-    
-            
+                    temp_org_size = fat_df.loc[fat_df['Image Name (.tif)']==idx[img]]['# of Pixels'].iloc[-1]
+                    temp_ds_size = fat_df.loc[fat_df['Image Name (.tif)']==idx[img]]['Down sampled # of Pixels'].iloc[-1]
+                    temp_org_rate = fat_df.loc[fat_df['Image Name (.tif)']==idx[img]]['Reference Length (um/px)'].iloc[-1]
+        
                 #Plot images, hand labels, and masks
-                temp_ax[0,0].imshow(inverse_normalize(imgs[img]).cpu().permute(1, 2, 0))
+                temp_ax[0,0].imshow(imgs[img].cpu().permute(1, 2, 0))
                 temp_ax[0,0].tick_params(axis='both', labelsize=0, length = 0)
-                temp_ax[0,1].imshow(inverse_normalize(imgs[img]).cpu().permute(1,2,0))
+                temp_ax[0,1].imshow(imgs[img].cpu().permute(1,2,0))
                 temp_ax[0,1].imshow(true_masks[img][0].cpu(),'jet',interpolation=None,alpha=alpha)
                 temp_ax[0,1].tick_params(axis='both', labelsize=0, length = 0)
                 temp_ax[1,1].imshow(true_masks[img][0].cpu(),cmap='gray')
@@ -101,14 +88,12 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                         
                 #Compute percentage of fat from ground truth
                 if show_fat:
-                    temp_fat[0] = np.count_nonzero(true_masks[img][0]) /(temp_rate)
-                    # temp_fat[0] = np.count_nonzero(true_masks[img][0]) * (temp_rate)
-                
+                    temp_fat[0] = true_masks[img][0].count_nonzero().item() * (temp_org_size/temp_ds_size) * (temp_org_rate)**2
+                 
                 #Labels Rows and columns
                 col_names = [idx[img], 'Ground Truth'] + model_names
                 cols = ['{}'.format(col) for col in col_names]
                 
-                    
                 for ax, col in zip(axes[0], cols):
                     ax.set_title(col)
             
@@ -116,18 +101,12 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                 # Initialize the histogram model for this run
                 for key in seg_models:
                     
-                    temp_params = Parameters(histogram_skips=hist_skips[key],
-                                             histogram_pools=hist_pools[key],
-                                             use_attention=attention[key],
-                                             model_selection=model_selection[key])
+                    temp_params = Parameters(model=seg_models[key])
                     
-                    model_name = temp_params['Model_names'][temp_params['model_selection']]
             
-                    model = initialize_model(model_name, num_classes,
-                                                   temp_params)
+                    model = initialize_model(seg_models[key], num_classes,temp_params)
                     
                     # If parallelized, need to set change model
-                    # if temp_params['Parallelize']:
                     model = nn.DataParallel(model)
             
                     # Send the model to GPU if available
@@ -137,14 +116,12 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                     sub_dir, fig_dir = Generate_Dir_Name(split, temp_params)
                     
                     #Load weights for model
-                    #pdb.set_trace()
                     model.load_state_dict(torch.load(sub_dir + 'best_wts.pt', 
                                                 map_location=torch.device(device)))
                     
-                    
                     #Get output and plot
                     model.eval()
-                    # pdb.set_trace()
+                    
                     with torch.no_grad():
                         preds = model(imgs[img].unsqueeze(0))
                         preds = (torch.sigmoid(preds) > .5).float()
@@ -160,17 +137,15 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                     temp_ax[1,key+2].tick_params(axis='both', labelsize=0, length = 0)
                     
                     #Computed weighted IOU (account for class imbalance)
-                    temp_IOU_pos = np.round(iou(preds,true_masks[img]).item(),decimals=2)
-                    # pdb.set_trace()
+                    temp_IOU_pos = iou(preds,true_masks[img]).item()
                     try:
-                        temp_haus = np.round(hausdorff_pytorch.compute(preds,true_masks[img].unsqueeze(0)).item(),decimals=2)
+                        temp_haus = hausdorff_pytorch.compute(preds,true_masks[img].unsqueeze(0)).item()
                     except:
                         temp_haus = 'inf'
                     f1_score = np.round(f_score(preds,true_masks[img]).item(),decimals=2)
                     temp_true_masks = true_masks[img].cpu().numpy().reshape(-1).astype(int)
                     temp_preds = preds[0].cpu().numpy().reshape(-1).astype(int)
-                    temp_IOU_macro = np.round(jsc(temp_true_masks, temp_preds, average='macro'),decimals=2)
-                    temp_ax[1,key+2].set_title('{} IOU: {}, \n Dice (F1): {}, \n Hausdorff: {}'.format(class_name,
+                    temp_ax[1,key+2].set_title('{} IOU: {:.2f}, \n Dice (F1): {:.2f}, \n Hausdorff: {:.2f}'.format(class_name,
                                                                                                           temp_IOU_pos, 
                                                                                                            f1_score,
                                                                                                            temp_haus))
@@ -180,10 +155,9 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
 
                     #Compute estimated fat
                     if show_fat:
-                        temp_fat[key+1] = np.count_nonzero(preds[0]) /(temp_rate)
+                        temp_fat[key+1] = preds[0].count_nonzero().item() * (temp_org_size/temp_ds_size) * (temp_org_rate)**2
                  
                 #Plot estimated fat area and highlight model closest to actual value
-                # pdb.set_trace()
                 if show_fat:
                     y_pos = np.arange(len(temp_fat))
                     rects = temp_ax[1,0].bar(y_pos,temp_fat)
@@ -209,12 +183,6 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                 
                 img_count += 1
                 print('Finished image {} of {}'.format(img_count,len(dataloaders[phase].sampler)))
-                
-                if img_count == temp_max_imgs:
-                    break
-                
-            if img_count == temp_max_imgs:
-                break
         
     
     
