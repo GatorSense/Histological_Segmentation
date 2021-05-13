@@ -77,7 +77,7 @@ split = 0
 
 for split in range(0, numRuns):
     
-    # Initialize the histogram model for this run
+    # Initialize the segmentation model for this run
     model = initialize_model(model_name, num_classes,Network_parameters)
 
     # Send the model to GPU if available
