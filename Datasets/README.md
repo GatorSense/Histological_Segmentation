@@ -11,7 +11,8 @@ on the webpages and provided here.
 Please download the [`SFBHI_dataset`](https://drive.google.com/drive/folders/1ZYGR7HxrJFIk5V9UIUYWWjcJuAyYkMxA?usp=sharing) 
 and follow these instructions:
 
-1. Download and unzip the folder `SFBHI`
+1. Download and unzip the folder `SFBHI` (Note: this folder contains the 
+256x256 images, the full sized images are available in the drive as well.)
 2. The structure of the `SFBHI` folder is as follows:
 ```
 └── root dir
