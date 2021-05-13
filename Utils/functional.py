@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 10 09:44:24 2021
 Functional code from https://github.com/qubvel/segmentation_models.pytorch
 Modified to include Hausdorff loss from: https://github.com/SilmarilBearer/HausdorffLoss
 @author: jpeeples

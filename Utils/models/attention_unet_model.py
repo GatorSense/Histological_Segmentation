@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 16 12:29:39 2021
-
+Code from https://github.com/LeeJunHyun/Image_Segmentation
 @author: jpeeples
 """
 import torch
@@ -9,7 +8,6 @@ import torch.nn as nn
 from .unet_parts import *
 import pdb
 
-#Code from https://github.com/LeeJunHyun/Image_Segmentation
 class Attention_block(nn.Module):
     def __init__(self,F_g,F_l,F_int):
         super(Attention_block,self).__init__()

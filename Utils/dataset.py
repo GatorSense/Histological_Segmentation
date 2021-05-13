@@ -1,3 +1,18 @@
+# -*- coding: utf-8 -*-
+"""
+This pytorch custom dataset was modified from code in this repository:
+https://github.com/jeromerony/survey_wsl_histology. Please cite their work:
+    
+@article{rony2019weak-loc-histo-survey,
+  title={Deep weakly-supervised learning methods for classification and localization in histology images: a survey},
+  author={Rony, J. and Belharbi, S. and Dolz, J. and Ben Ayed, I. and McCaffrey, L. and Granger, E.},
+  journal={coRR},
+  volume={abs/1909.03354},
+  year={2019}
+}
+@author: jpeeples 
+"""
+
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -38,7 +53,6 @@ class PhotoDataset(Dataset):
         self.class_label = class_label
 
        #Updated from previous loader
-        # pdb.set_trace()
         if class_label:
             self.samples = [(os.path.join(data_path,file[0]), os.path.join(data_path,file[1]), 
                          file[2]) for file in files]
@@ -64,43 +78,6 @@ class PhotoDataset(Dataset):
     def __len__(self):
         return len(self.samples)
     
-    #TBD
-    def get_pos_weight(self,indices):
-        
-        #Load masks and compute highest postive weight
-        max_pos_weight = 1
-        list_wts = []
-        # count = 0
-        for idx in indices:
-            mask_file = glob(self.masks_dir + self.ids[idx] + '.*')
-            # mask = np.load(mask_file[0],allow_pickle=True)
-            mask = Image.open(mask_file[0]).convert('L')
-            if self.resize is not None:
-                mask = mask.resize(self.resize, resample=Image.LANCZOS)
-            elif self.min_resize is not None:
-                mask = F.resize(mask, self.min_resize, interpolation=Image.LANCZOS)
-            
-            #Get ratio of classes in masks for weights
-            #For now, returning positive weights (only used for training)
-            #Later, can assign weights per sample and weight loss (only for training data)
-            #Need to think about extending to three class (fat, background, and scaffold)
-            class_num,class_counts = np.unique(mask,return_counts=True)
-            
-            ratios = []
-            class_combos = itertools.combinations(range(max(class_num).astype(int)+1),2)
-            
-            # pdb.set_trace()
-            for current_combo in class_combos:
-                try:
-                    ratios.append(class_counts[current_combo[0]]/class_counts[current_combo[1]])
-                except:
-                    pass
-            
-            # pdb.set_trace()
-            pos_weight = np.array(ratios)
-            list_wts.append(np.max(pos_weight))
-        
-        return np.ceil(np.min(np.array(list_wts)))
 
     def __getitem__(self, index):
         image_path, mask_path, label = self.samples[index]

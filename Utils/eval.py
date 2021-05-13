@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Functional code from https://github.com/qubvel/segmentation_models.pytorch
+Modified to include Hausdorff loss from: https://github.com/SilmarilBearer/HausdorffLoss
+@author: jpeeples
+"""
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
@@ -6,6 +12,7 @@ import torch.nn.functional as F
 from torch.autograd import Function
 from .functional import *
 
+https://github.com/milesial/Pytorch-UNet
 
 def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
     """Evaluation without the densecrf with the dice coefficient"""
