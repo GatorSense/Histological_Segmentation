@@ -8,11 +8,11 @@ demo.py
 """
 import numpy as np
 
-def Parameters(model='JOSHUA+'):
+def Parameters(args):
     ######## ONLY CHANGE PARAMETERS BELOW ########
     #Flag for if results are to be saved out
     #Set to True to save results out and False to not save results
-    save_results = True
+    save_results = args.save_results
     
     #Select model, options include:
     # 'UNET'
@@ -20,7 +20,7 @@ def Parameters(model='JOSHUA+'):
     # 'UNET+'
     # 'JOSHUA'
     # 'JOSHUA+'
-    model = model
+    model = args.model
     
     seg_models = {'UNET': 0,'UNET+': 1, 'Attention UNET': 2, 'JOSHUA': 3, 'JOSHUA+': 4}
     model_selection = {0: 1, 1: 1, 2: 4, 3: 1, 4: 1}
@@ -29,12 +29,12 @@ def Parameters(model='JOSHUA+'):
     
     #Flag for to save out model at certain checkpoints (default: every 5 epochs)
     #Set to True to save results out and False to not save results
-    save_cp = False
-    save_epoch = 5
+    save_cp = args.save_cp
+    save_epoch = args.save_epoch
     
     #Location to store trained models
     #Always add slash (/) after folder name
-    folder = 'HPG_Results/'
+    folder = args.folder
     
     #Flag to use histogram model(s) or baseline UNET model
     # Set either to True to use histogram layer(s) and both to False to use baseline model 
@@ -50,7 +50,7 @@ def Parameters(model='JOSHUA+'):
     pool_locations = [True,True,True,True] 
     
     #Select dataset. Set to number of desired segmentation dataset
-    data_selection = 1
+    data_selection = args.data_selection
     Dataset_names = { 1: 'SFBHI', 2: 'GlaS'}
     
     #If SFBHI, generate images with adipose tissue graphs
@@ -60,35 +60,30 @@ def Parameters(model='JOSHUA+'):
         show_fat = False
     
     #Number of input channels for each dataset (for now, all are 3 channels-RGB)
-    channels = 3
-    
-    #Segmentation model to use
-    #Histogram layer only implemented for UNET model
-    model_selection = 4
+    channels = args.channels
     
     Model_name = model
     
     #For upsampling feature maps, set to True to use bilinear interpolation
     #Set to False to learn transpose convolution (consume more memory)
-    bilinear = True
+    bilinear = args.bilinear
     
-    #Data augmentation (default False)
+    #Data augmentation (default True)
     #Set to true, training data will be rotated, random flip (p=.5), random patch extraction
-    augment = True
-    rotate = True
+    augment = args.augment
+    rotate = args.rotate
     
-    #Resize the image before center crop. Recommended values for resize is 256 (used in paper), 384,
-    #and 512 
-    #Center crop size is recommended to be 256. Patch extracted from training data
-    #For seg
-    resize_size = 256
-    center_size = 256
+    #Resize the image before center crop. Recommended values for resize is 256 (used in paper)
+    #Center crop size is recommended to be 256 (No center crops). 
+    resize_size = args.resize_size
+    center_size = args.center_size
     
     #Number of folds for K fold CV
-    folds = 5
+    fold_datasets = {1: 4, 2: 5}
+    folds = fold_datasets[args.data_selection]
     
-    #Set random state for K fold CV for repeatability of data
-    random_state = 1
+    #Set random state for K fold CV for repeatability of data/model initialization
+    random_state = args.random_state
     
     #Number of bins for histogram layer. Recommended values are 4, 8 and 16.
     #Set number of bins to powers of 2 (e.g., 2, 4, 8, etc.)
@@ -96,45 +91,37 @@ def Parameters(model='JOSHUA+'):
     #downsample feature maps before binning process. If the bin values are set
     #higher th, than an error will occur due to attempting to reduce the number of 
     #features maps to values less than one
-    numBins = 16
+    numBins = args.numBins
     
     #Flag for feature extraction (fix backbone/encoder). False, train whole model.
     #Flag to add BN to convolutional features (default: False)
-    feature_extraction = False
-    add_bn = False
+    feature_extraction = args.feature_extraction
+    add_bn = args.add_bn
     
     #Set initial learning rate for model
     #Recommended values are .001 or .01
-    lr = .01
-    
-    #Set momentum for SGD optimizer. 
-    #Recommended value is .9 (used in paper)
-    alpha = .9
+    lr = args.add_bn
     
     #Parameters of Histogram Layer
     #For no padding, set 0. If padding is desired,
     #enter amount of zero padding to add to each side of image 
     #(did not use padding in paper, recommended value is 0 for padding)
-    padding = 0
+    padding = args.padding
     
     
     #Set whether to use sum (unnormalized count) or average pooling (normalized count)
     # (default: average pooling)
     #Set whether to enforce sum to one constraint across bins (default: True)
-    normalize_count = True
-    normalize_bins = True
-    
-    #Set step_size and decay rate for scheduler
-    #In paper, learning rate was decayed factor of .1 every ten epochs (recommended)
-    step_size = 10
-    gamma = .1
+    normalize_count = args.normalize_count
+    normalize_bins = args.normalize_bins
     
     #Batch size for training and epochs. If running experiments on single GPU (e.g., 2080ti),
     #training batch size is recommended to be 4 for SFBHI and 2 for GlaS. If using at least two GPUs, 
     #the recommended training batch size is 8 for SFBHI and 4 for GlaS (as done in paper)
     #May need to reduce batch size if CUDA out of memory issue occurs
-    batch_size = {'train': 2, 'val': 10, 'test': 10}
-    num_epochs = 2
+    batch_size = {'train': args.train_batch_size, 'val': args.val_batch_size, 
+                  'test': args.test_batch_size}
+    num_epochs = args.num_epochs
     
     #Pin memory for dataloader (set to True for experiments)
     pin_memory = True
@@ -149,7 +136,7 @@ def Parameters(model='JOSHUA+'):
     font_size = 16
     
     #Run on multiple GPUs
-    Parallelize_model = False
+    parallelize_model = args.parallelize_model
     
     
     ######## ONLY CHANGE PARAMETERS ABOVE ########
@@ -172,7 +159,7 @@ def Parameters(model='JOSHUA+'):
                  'GlaS': 1}
     
     #Number of runs and/or splits for each dataset (5 fold)
-    Splits = {'SFBHI': 5, 
+    Splits = {'SFBHI': 4, 
               'GlaS': 5}
     
     Dataset = Dataset_names[data_selection]
@@ -196,20 +183,18 @@ def Parameters(model='JOSHUA+'):
                           'Dataset': Dataset, 'imgs_dir': imgs_dir,
                           'masks_dir': masks_dir,'num_workers': num_workers, 
                           'mode': mode,'lr_rate': lr,
-                          'momentum': alpha, 'step_size': step_size,
-                          'gamma': gamma, 'batch_size' : batch_size, 
+                          'batch_size' : batch_size, 
                           'num_epochs': num_epochs, 'resize_size': resize_size, 
                           'center_size': center_size, 'padding': padding, 
                           'normalize_count': normalize_count, 
                           'normalize_bins': normalize_bins,
-                          'numBins': numBins,
-                          'Model_name': Model_name, 'model_selection': model_selection,
+                          'numBins': numBins,'Model_name': Model_name,
                           'num_classes': num_classes, 'Splits': Splits, 
                           'feature_extraction': feature_extraction,
                           'hist_model': Hist_model_name,
                           'add_bn': add_bn, 'pin_memory': pin_memory,
                           'folds': folds,'fig_size': fig_size, 'font_size': font_size, 
-                          'Parallelize_model': Parallelize_model,
+                          'Parallelize_model': parallelize_model,
                           'histogram_skips': histogram_skips,
                           'histogram_pools': histogram_pools,
                           'skip_locations': skip_locations, 'channels': channels,

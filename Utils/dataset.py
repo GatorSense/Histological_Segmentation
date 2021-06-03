@@ -57,8 +57,8 @@ class PhotoDataset(Dataset):
             self.samples = [(os.path.join(data_path,file[0]), os.path.join(data_path,file[1]), 
                          file[2]) for file in files]
         else:
-            self.samples = [(os.path.join(data_path,file[0]), os.path.join(label_path,file[0]), 
-                         file[0]) for file in files]
+            self.samples = [(os.path.join(data_path,file[0].replace(" ", "")), os.path.join(label_path,file[0].replace(" ", "")), 
+                         file[0].replace(" ", "")) for file in files]
             
             self.ids = [splitext(file)[0] for file in listdir(data_path)
                         if (not file.startswith('.') and os.path.isfile(os.path.join(data_path,file)))]

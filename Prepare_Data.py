@@ -49,7 +49,7 @@ def Prepare_DataLoaders(Network_parameters, splits):
        val_indices = []
        test_indices = []
        for fold in range(0,splits):
-           files = get_files(imgs_dir+'folds',0,fold)
+           files = get_files(imgs_dir+'folds','time',fold)
            temp_train, temp_val, temp_test = [decode_classes(f,class_label=False) for f in files]
            train_indices.append(temp_train)
            val_indices.append(temp_val)

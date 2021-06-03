@@ -7,7 +7,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch import optim
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 import time
@@ -130,7 +129,6 @@ def train_net(net,device,indices,split,Network_parameters,epochs=5,
                     mask_type = torch.float32 if net.n_classes == 1 else torch.long
                     true_masks = true_masks.to(device=device, dtype=mask_type)
                     
-                    pdb.set_trace()
                     masks_pred = net(imgs)
                     if net.n_classes > 1:
                         try:
@@ -180,8 +178,8 @@ def train_net(net,device,indices,split,Network_parameters,epochs=5,
                                                                                               epoch_IOU_pos/total,
                                                                                               epoch_dice/total))   
             else:
+                    net.eval()
                     for val_batch in dataloaders[phase]:
-                        # pdb.set_trace()
                         val_imgs = val_batch['image']
                         val_true_masks = val_batch['mask']
                         assert val_imgs.shape[1] == net.n_channels, \
@@ -210,7 +208,7 @@ def train_net(net,device,indices,split,Network_parameters,epochs=5,
                     if net.n_classes > 1:
                         logging.info('Validation cross entropy: {}'.format(val_dict['dice']))
                         writer.add_scalar('Loss/val', val_dict['loss'], global_step)
-                        writer.add_scalar('IOU_fat/val',val_dict['pos_IOU'],global_step)
+                        writer.add_scalar('IOU_pos/val',val_dict['pos_IOU'],global_step)
                     
                     else:
                         logging.info('Validation Dice Coeff: {}'.format(val_dict['dice']))

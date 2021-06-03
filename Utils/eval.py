@@ -2,17 +2,16 @@
 """
 Functional code from https://github.com/qubvel/segmentation_models.pytorch
 Modified to include Hausdorff loss from: https://github.com/SilmarilBearer/HausdorffLoss
+Eval code modified from https://github.com/milesial/Pytorch-UNet
 @author: jpeeples
 """
 import torch
 import torch.nn.functional as F
-from tqdm import tqdm
-
-import torch.nn.functional as F
 from torch.autograd import Function
-from .functional import *
+from sklearn.metrics import jaccard_score as jsc
+from sklearn.metrics import adjusted_rand_score as arsc
 
-https://github.com/milesial/Pytorch-UNet
+from .functional import *
 
 def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
     """Evaluation without the densecrf with the dice coefficient"""

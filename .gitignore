@@ -6,5 +6,7 @@ Datasets/GlaS/*.bmp
 # Ignore saved model
 HPG_Results/
 New_Metrics/
+Saved_Models/
+HPG_code/
 
 
