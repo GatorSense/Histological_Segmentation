@@ -100,7 +100,7 @@ def Parameters(args):
     
     #Set initial learning rate for model
     #Recommended values are .001 or .01
-    lr = args.add_bn
+    lr = args.lr
     
     #Parameters of Histogram Layer
     #For no padding, set 0. If padding is desired,
