@@ -24,7 +24,7 @@ def save_results(train_dict,test_dict,split,Network_parameters,num_params):
     else:
         filename = (Network_parameters['folder'] + '/'+ Network_parameters['mode'] 
                     + '/' + Network_parameters['Dataset'] + '/' +
-                    Network_parameters['Model_names'][Network_parameters['model_selection']] 
+                    Network_parameters['Model_name']
                     + '/Run_' + str(split + 1) + '/')            
     
     if not os.path.exists(filename):

@@ -7,18 +7,25 @@ Eval code modified from https://github.com/milesial/Pytorch-UNet
 """
 import torch
 import torch.nn.functional as F
+import torch.nn as nn
 from torch.autograd import Function
 from sklearn.metrics import jaccard_score as jsc
 from sklearn.metrics import adjusted_rand_score as arsc
+import time
 
 from .functional import *
+from .metrics import eval_metrics
+from barbar import Bar
 
 def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
     """Evaluation without the densecrf with the dice coefficient"""
     if best_wts is not None:
         net.load_state_dict(best_wts)
     net.eval()
-    mask_type = torch.float32 if net.module.n_classes == 1 else torch.long
+    try:
+        mask_type = torch.float32 if net.module.n_classes == 1 else torch.long
+    except:
+         mask_type = torch.float32 if net.n_classes == 1 else torch.long 
     n_val = 0
     tot = 0
     jacc_score = 0
@@ -26,16 +33,18 @@ def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
     inf_time = 0
     iou_score = 0
     val_acc = 0
+    class_acc = 0
     haus_dist = 0
     haus_count = 0
     prec = 0
     rec = 0
     f1_score = 0
     adj_rand = 0
+    mAP = 0
     #Intialize Hausdorff Distance object
     hausdorff_pytorch = HausdorffDistance()
 
-    for batch in loader:
+    for idx, batch in enumerate(Bar(loader)):
         imgs, true_masks = batch['image'], batch['mask']
         imgs = imgs.to(device=device, dtype=torch.float32)
         true_masks = true_masks.to(device=device, dtype=mask_type)
@@ -46,17 +55,22 @@ def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
             temp_end_time = (time.time() - temp_start_time)/imgs.size(0)
             inf_time += temp_end_time
             
-        if net.module.n_classes > 1:
-            tot += F.cross_entropy(mask_pred, true_masks.squeeze(1)).item()
-            prec += precision(mask_pred,true_masks).item()
-            rec += recall(mask_pred,true_masks).item()
-            f1_score += f_score(mask_pred,true_masks).item()
-            jacc_score += iou(mask_pred,true_masks)
-            temp_preds = torch.max(mask_pred,2).cpu().numpy().reshape(-1)
-            temp_masks = torch.max(true_masks,2).cpu().numpy().reshape(-1)
-            haus_dist += hausdorff_distance(temp_masks,temp_preds).item()
-            adj_rand += arsc(temp_masks,temp_preds)
-            n_val += true_masks.size(0)
+        try:
+            n_classes = net.module.n_classes
+        except:
+            n_classes = net.n_classes
+            
+        if n_classes > 1:
+ 
+            overall_acc, avg_per_class_acc, avg_jacc, avg_dice, avg_mAP = eval_metrics(true_masks,mask_pred,n_classes)
+            tot += avg_dice.item()
+            jacc_score += avg_jacc.item()
+            val_acc = overall_acc.item()
+            class_acc += avg_per_class_acc.item()
+            loss += nn.CrossEntropyLoss()(mask_pred, true_masks).item()
+            #Average over batch (metrics already average over samples in minibatch)
+            n_val += 1
+            mAP += avg_mAP.item()
             
         else:
             pred = torch.sigmoid(mask_pred)
@@ -75,12 +89,20 @@ def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
             val_acc += Average_Metric(pred, true_masks,metric_name='Acc')
             n_val += true_masks.size(0)
             
-    return {'dice': tot / n_val,'pos_IOU': jacc_score / n_val,
-            'loss': (loss / n_val),'inf_time': inf_time / n_val,
-            'overall_IOU': iou_score/ n_val,'pixel_acc': val_acc / n_val,
-            'haus_dist': haus_dist / (n_val-haus_count+1e-7),'adj_rand': adj_rand / n_val,
-            'precision': prec / n_val,'recall': rec / n_val,
-            'f1_score': f1_score / n_val}
+    if n_classes > 1:
+
+        metrics = {'dice': tot / n_val,'jacc': jacc_score / n_val,
+          'loss': (loss / n_val),'inf_time': inf_time / n_val,
+          'pixel_acc': val_acc / n_val, 'mAP': mAP / n_val, 'class_acc': class_acc}
+    else:
+        metrics = {'dice': tot / n_val,'pos_IOU': jacc_score / n_val,
+                    'loss': (loss / n_val),'inf_time': inf_time / n_val,
+                    'overall_IOU': iou_score/ n_val,'pixel_acc': val_acc / n_val,
+                    'haus_dist': haus_dist / (n_val-haus_count+1e-7),'adj_rand': adj_rand / n_val,
+                    'precision': prec / n_val,'recall': rec / n_val,
+                    'f1_score': f1_score / n_val}
+        
+    return metrics
 
 class DiceCoeff(Function):
     """Dice coeff for individual examples"""
@@ -122,7 +144,7 @@ def dice_coeff(input, target):
     # return s / (i + 1)
     return s
 
-def Average_Metric(input,target,pos_wt=None,metric_name='Prec'):
+def Average_Metric(input,target,pos_wt=None,metric_name='Prec',ignore_channels=None):
     """Metrics for batches"""
     s = 0
     haus_count = 0
@@ -130,11 +152,11 @@ def Average_Metric(input,target,pos_wt=None,metric_name='Prec'):
 
     for i, c in enumerate(zip(input, target)):
         if metric_name == 'Precision':
-            s +=  precision(c[1],c[0]).item()
+            s +=  precision(c[1],c[0],ignore_channels=ignore_channels).item()
         elif metric_name == 'Recall':
-            s += recall(c[1],c[0]).item()
+            s += recall(c[1],c[0],ignore_channels=ignore_channels).item()
         elif metric_name == 'F1':
-            s += f_score(c[1],c[0]).item()
+            s += f_score(c[1],c[0],ignore_channels=ignore_channels).item()
         elif metric_name == 'Hausdorff':
             temp_haus = hausdorff_pytorch.compute(c[1].unsqueeze(0),c[0].unsqueeze(0)).item()
             if temp_haus == np.inf: #If output does not have positive class, do not include in avg (GT has few positive ROI) 
@@ -142,7 +164,7 @@ def Average_Metric(input,target,pos_wt=None,metric_name='Prec'):
             else:
                 s += temp_haus
         elif metric_name == 'Jaccard':
-            s += iou(c[1],c[0]).item()
+            s += iou(c[1],c[0],ignore_channels=ignore_channels).item()
         elif metric_name == 'Rand':
             s += arsc(c[1].cpu().numpy().reshape(-1).astype(int),
                       c[0].cpu().numpy().reshape(-1).astype(int))
@@ -156,7 +178,7 @@ def Average_Metric(input,target,pos_wt=None,metric_name='Prec'):
             s += F.binary_cross_entropy_with_logits(c[0],c[1],
                                                     pos_weight=pos_wt).item()
         elif metric_name == 'Dice_Loss':
-            s += 1-f_score(c[1],c[0]).item()
+            s += 1-f_score(c[1],c[0],ignore_channels=ignore_channels).item()
         else:
             raise RuntimeError('Metric is not implemented')
         

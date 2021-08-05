@@ -15,10 +15,10 @@ import pdb
 import torch
 import torch.nn as nn
 
-from View_Results_Parameters import Parameters
-from Utils.Initialize_Model import initialize_model
+from Demo_Parameters import Parameters
+from Utils.initialize_model import initialize_model
 from Utils.functional import *
-from Utils.PytorchUNet.create_dataloaders import Get_Dataloaders
+from Utils.create_dataloaders import Get_Dataloaders
 
 
 def Generate_Dir_Name(split,Network_parameters):
@@ -49,9 +49,11 @@ def add_to_excel(table,writer,model_names,img_names,fold=1):
     DF.to_excel(writer,sheet_name='Fold_{}'.format(fold+1))
 
 def Generate_Fat(indices,mask_type,seg_models,device,folds,num_classes,
-                 fat_df,folder):
+                 fat_df,folder,temp_params=None):
 
-    temp_params = Parameters()
+    if temp_params is None:
+        temp_params = Parameters()
+        
     model_names = []
     model_names.append('Ground Truth')
 

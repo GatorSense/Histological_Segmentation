@@ -38,13 +38,18 @@ import pdb
 #Turn off plotting
 plt.ioff()
 
+
+
 def main(Params,args):
-    #Reproducibility
-    torch.manual_seed(Params['random_state'])
-    np.random.seed(Params['random_state'])
-    random.seed(Params['random_state'])
-    torch.cuda.manual_seed(Params['random_state'])
-    torch.cuda.manual_seed_all(Params['random_state'])
+    torch.cuda.empty_cache()
+    CUDA_LAUNCH_BLOCKING=1
+    
+    # #Reproducibility
+    # torch.manual_seed(Params['random_state'])
+    # np.random.seed(Params['random_state'])
+    # random.seed(Params['random_state'])
+    # torch.cuda.manual_seed(Params['random_state'])
+    # torch.cuda.manual_seed_all(Params['random_state'])
     
     #Name of dataset
     Dataset = Params['Dataset']
@@ -76,6 +81,14 @@ def main(Params,args):
     
     for split in range(0, numRuns):
         
+        #For CSAS experiments, data splits are the same but random initialization should change
+        #Reproducibility
+        torch.manual_seed(split)
+        np.random.seed(split)
+        random.seed(split)
+        torch.cuda.manual_seed(split)
+        torch.cuda.manual_seed_all(split)
+        
         # Initialize the segmentation model for this run
         model = initialize_model(model_name, num_classes,Params)
         
@@ -91,16 +104,25 @@ def main(Params,args):
         
         #Print number of trainable parameters
         num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        print("Number of parameters: %d" % (num_params))  
+        # print("Number of parameters: %d" % (num_params))  
     
         # Train and evaluate
         try:
+            if torch.cuda.device_count() > 1:
+                n_channels = model.module.n_channels
+                n_classes = model.module.n_classes
+                bilinear = model.module.bilinear
+            else:
+                n_channels = model.n_channels
+                n_classes = model.n_classes
+                bilinear = model.bilinear
+                
             logging.basicConfig(level=logging.INFO,format='%(levelname)s: %(message)s')
             logging.info(f'Using device {device}')
             logging.info(f'Network:\n'
-                 f'\t{model.n_channels} input channels\n'
-                 f'\t{model.n_classes} output channels (classes)\n'
-                 f'\t{"Bilinear" if model.bilinear else "Transposed conv"} upscaling\n'
+                 f'\t{n_channels} input channels\n'
+                 f'\t{n_classes} output channels (classes)\n'
+                 f'\t{"Bilinear" if bilinear else "Transposed conv"} upscaling\n'
                  f'\tTotal number of trainable parameters: {num_params}')
                
             train_net(net=model,device=device,indices=indices,
@@ -133,6 +155,11 @@ def main(Params,args):
         split += 1
        
 def parse_args():
+        # 'UNET'
+    # 'Attention UNET'
+    # 'UNET+'
+    # 'JOSHUA'
+    # 'JOSHUA+'
     parser = argparse.ArgumentParser(description='Run segmentation models for dataset')
     parser.add_argument('--save_results', type=bool, default=True,
                         help='Save results of experiments(default: True')
@@ -144,8 +171,8 @@ def parse_args():
                         help='Location to save models')
     parser.add_argument('--model', type=str, default='JOSHUA+',
                         help='Select model to train with (default: JOSHUA+')
-    parser.add_argument('--data_selection', type=int, default=1,
-                        help='Dataset selection:  1: SFBHI, 2: GlaS')
+    parser.add_argument('--data_selection', type=int, default=3,
+                        help='Dataset selection:  1: SFBHI, 2: GlaS, 3:CSAS')
     parser.add_argument('--channels', type=int, default=3,
                         help='Input channels of network (default: 3, RGB images)')
     parser.add_argument('--bilinear', type=bool, default=True,
@@ -162,11 +189,11 @@ def parse_args():
                         help='Flag to use pretrained model from ImageNet or train from scratch (default: False)')
     parser.add_argument('--train_batch_size', type=int, default=1,
                         help='input batch size for training (default: 8)')
-    parser.add_argument('--val_batch_size', type=int, default=4,
+    parser.add_argument('--val_batch_size', type=int, default=1,
                         help='input batch size for validation (default: 10)')
-    parser.add_argument('--test_batch_size', type=int, default=4,
+    parser.add_argument('--test_batch_size', type=int, default=1,
                         help='input batch size for testing (default: 10)')
-    parser.add_argument('--num_epochs', type=int, default=1,
+    parser.add_argument('--num_epochs', type=int, default=2,
                         help='Number of epochs to train each model for (default: 150)')
     parser.add_argument('--random_state', type=int, default=1,
                         help='Set random state for K fold CV for repeatability of data/model initialization (default: 1)')
@@ -178,9 +205,9 @@ def parse_args():
                         help='Set whether to use sum (unnormalized count) or average pooling (normalized count) (default: True)')
     parser.add_argument('--normalize_bins',type=bool, default=True,
                         help='Set whether to enforce sum to one constraint across bins (default: True)')
-    parser.add_argument('--resize_size', type=int, default=256,
+    parser.add_argument('--resize_size', type=int, default=None,
                         help='Resize the image before center crop. (default: 256)')
-    parser.add_argument('--center_size', type=int, default=256,
+    parser.add_argument('--center_size', type=int, default=None,
                         help='Center crop image. (default: 256)')
     parser.add_argument('--lr', type=float, default=0.01,
                         help='learning rate (default: 0.01)')
@@ -192,6 +219,15 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
+    model_list = ['JOSHUA+','UNET','UNET+','Attention_UNET', 'JOSHUA']
+    # model_list = ['UNET','UNET+','Attention_UNET', 'JOSHUA+']
     args = parse_args()
-    params = Parameters(args)
-    main(params,args)
+    
+    model_count = 0
+    for model in model_list:
+        setattr(args, 'model', model)
+        params = Parameters(args)
+        main(params,args)
+        model_count += 1
+        print('Finished Model {} of {}'.format(model_count,len(model_list)))
+        
