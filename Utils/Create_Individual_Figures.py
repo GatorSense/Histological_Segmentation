@@ -43,6 +43,11 @@ def Generate_Dir_Name(split,Network_parameters):
         
     return dir_name, fig_dir_name
 
+def inverse_normalize(tensor, mean=(0,0,0), std=(1,1,1)):
+    for t, m, s in zip(tensor, mean, std):
+        t.mul_(s).add_(m)
+    return tensor
+
 def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                     num_classes,fat_df,args,show_fat=False,alpha=.35,class_name='Fat'):
 
@@ -53,7 +58,7 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
         model_names.append(seg_models[key])
     
     hausdorff_pytorch = HausdorffDistance()
-    for phase in ['val','test']:
+    for phase in ['val']:
     
         img_count = 0
         for batch in dataloaders[phase]:
@@ -121,6 +126,8 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                     
             
                     model = initialize_model(seg_models[key], num_classes,temp_params)
+                    
+                    sub_dir, fig_dir = Generate_Dir_Name(split, temp_params)
                     
                     #If parallelized, need to set model
                       # Send the model to GPU if available

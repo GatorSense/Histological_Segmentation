@@ -10,6 +10,7 @@ from __future__ import division
 import csv
 import pdb
 from os.path import join
+import pdb
 
 #From WSL repo
 def csv_reader(fname):
@@ -34,7 +35,10 @@ def decode_classes(files: list,class_label=True) -> list:
     else:
         files_decoded_classes = []
         for f in files:
-            files_decoded_classes.append((f[0]+'.jpeg',))
+            try:
+                files_decoded_classes.append((f[0]+'.jpeg', f[1], f[2]))
+            except:
+                files_decoded_classes.append((f[0]+'.jpeg',f[0]+'.jpeg',f[0]+'.jpeg')) 
     return files_decoded_classes
 
 def Prepare_DataLoaders(Network_parameters, splits):
@@ -49,7 +53,9 @@ def Prepare_DataLoaders(Network_parameters, splits):
        val_indices = []
        test_indices = []
        for fold in range(0,splits):
-           files = get_files(imgs_dir+'folds','time',fold)
+           # files = get_files(imgs_dir+'folds',1,fold)
+           # files = get_files(imgs_dir+'folds','time',fold)
+           files = get_files(imgs_dir+'folds','time',0)
            temp_train, temp_val, temp_test = [decode_classes(f,class_label=False) for f in files]
            train_indices.append(temp_train)
            val_indices.append(temp_val)

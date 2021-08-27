@@ -8,7 +8,6 @@ Code modified from Pytorch Goodies: https://github.com/kevinzakka/pytorch-goodie
 import torch
 from torchmetrics.functional import average_precision
 import pdb
-# from torchmetrics.functional.utilities.data import to_onehot
 
 EPS = 1e-10
 

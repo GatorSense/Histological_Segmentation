@@ -22,7 +22,7 @@ def Parameters(args):
     # 'JOSHUA+'
     model = args.model
     
-    seg_models = {'UNET': 0,'UNET+': 1, 'Attention UNET': 2, 'JOSHUA': 3, 'JOSHUA+': 4}
+    seg_models = {'UNET': 0,'UNET+': 1, 'Attention_UNET': 2, 'JOSHUA': 3, 'JOSHUA+': 4}
     model_selection = {0: 1, 1: 1, 2: 4, 3: 1, 4: 1}
     hist_skips = {0: False, 1: False, 2: False, 3: True, 4:True}
     attention = {0: False, 1: True, 2: True, 3: False, 4: True}
@@ -79,7 +79,7 @@ def Parameters(args):
     center_size = args.center_size
     
     #Number of folds for K fold CV
-    fold_datasets = {1: 4, 2: 5}
+    fold_datasets = {1: 5, 2: 5}
     folds = fold_datasets[args.data_selection]
     
     #Set random state for K fold CV for repeatability of data/model initialization
@@ -159,6 +159,7 @@ def Parameters(args):
                  'GlaS': 1}
     
     #Number of runs and/or splits for each dataset (5 fold)
+    #For SFBHI, should be 5 unless "time" split (4)
     Splits = {'SFBHI': 4, 
               'GlaS': 5}
     

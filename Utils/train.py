@@ -297,13 +297,13 @@ def train_net(net,device,indices,split,Network_parameters,epochs=5,
                 
         
         #Check dice coefficient and save best model
-        # if val_dice_track[epoch] > best_dice:
-        #     best_dice = val_dice_track[epoch]
-        #     best_wts = net.state_dict()
-        #     best_model = net
-        if val_dict['loss'] < best_loss:
-            best_loss = val_dict['loss']
+        if val_dice_track[epoch] > best_dice:
+            best_dice = val_dice_track[epoch]
             best_wts = net.state_dict()
+            best_model = net
+        # if val_dict['loss'] < best_loss:
+        #     best_loss = val_dict['loss']
+        #     best_wts = net.state_dict()
             best_model = net
             val_metrics = val_dict
             
@@ -335,10 +335,6 @@ def train_net(net,device,indices,split,Network_parameters,epochs=5,
     text_file = open(dir_name+'Training_Weight.text','w')
     n = text_file.write('Training Positive Weight: ' + str(pos_wt))
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    # print('Best Val Dice: ')
-    # print(max(val_dice_track))
-    
-    # val_metrics = eval_net(best_model, dataloaders['val'], device, pos_wt=torch.tensor(pos_wt))
     
     torch.save(best_wts,dir_name+'best_wts.pt')
     output_val = open(dir_name + 'val_metrics.pkl','wb')

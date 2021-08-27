@@ -20,6 +20,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+## Local external libraries
 from Demo_Parameters import Parameters
 
 def Generate_Dir_Name(split,Network_parameters):
@@ -33,7 +34,7 @@ def Generate_Dir_Name(split,Network_parameters):
     else:
         dir_name = (Network_parameters['folder'] + '/'+ Network_parameters['mode'] 
                     + '/' + Network_parameters['Dataset'] + '/' +
-                    Network_parameters['Model_names'][Network_parameters['model_selection']] 
+                    Network_parameters['Model_name'] 
                     + '/Run_' + str(split + 1) + '/')  
     
     #Location to save figures
@@ -61,8 +62,8 @@ def load_metrics(sub_dir, metrics, phase = 'val'):
  
 def add_to_excel(table,writer,model_names,metrics_names,fold=1,overall=False):
     if overall:
-        table_avg = np.mean(table,axis=-1)
-        table_std = np.std(table,axis=-1)
+        table_avg = np.nanmean(table,axis=-1)
+        table_std = np.nanstd(table,axis=-1)
         DF_avg = pd.DataFrame(table_avg,index=model_names,columns=metrics_names)
         DF_std = pd.DataFrame(table_std,index=model_names,columns=metrics_names)
         DF_avg.to_excel(writer,sheet_name='Overall Avg')
@@ -74,10 +75,11 @@ def add_to_excel(table,writer,model_names,metrics_names,fold=1,overall=False):
         DF.to_excel(writer,sheet_name='Fold_{}'.format(fold+1))
            
 #Compute desired metrics and save to excel spreadsheet
-def Get_Metrics(metrics,seg_models,folds=5):
-
-    #Set names of models
+def Get_Metrics(metrics,seg_models,args,folds=5):
     
+    #Set paramters for experiments
+    Params = Parameters(args)    
+
     model_names = []
     metric_names = []
     for key in seg_models:
@@ -89,16 +91,21 @@ def Get_Metrics(metrics,seg_models,folds=5):
     val_table = np.zeros((len(seg_models),len(metrics),folds))
     test_table = np.zeros((len(seg_models),len(metrics),folds))
 
-    _, fig_dir = Generate_Dir_Name(0, Parameters())
+    _, fig_dir = Generate_Dir_Name(0, Params)
+    fig_dir = fig_dir + 'Metrics/Overall/'
+    
+    if not os.path.exists(fig_dir):
+                 os.makedirs(fig_dir)
+                 
     val_writer = pd.ExcelWriter(fig_dir+'Val_Metrics.xlsx', engine='xlsxwriter')
     test_writer = pd.ExcelWriter(fig_dir+'Test_Metrics.xlsx', engine='xlsxwriter')
     
     # Initialize the histogram model for this run
     for split in range(0,folds):
         for key in seg_models:
-            
-            temp_params = Parameters(model_name=seg_models[key])
-            
+            setattr(args, 'model', seg_models[key])
+            temp_params = Parameters(args)
+         
             #Get location of best weights
             sub_dir, _ = Generate_Dir_Name(split, temp_params)
             
@@ -119,6 +126,8 @@ def Get_Metrics(metrics,seg_models,folds=5):
     #Save spreadsheets
     val_writer.save()
     test_writer.save()
+    
+
     
     
 

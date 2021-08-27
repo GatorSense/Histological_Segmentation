@@ -45,7 +45,7 @@ class PhotoDataset(Dataset):
     def __init__(self, data_path, files, transform, mask_transform, augment=False, 
                  patch_size=None, rotate=False,
                  preload=False, resize=None, min_resize=None,class_label=True,
-                 label_path=None,CSAS=False,img_ext='.jpg',mask_ext='.png'):
+                 label_path=None,img_ext='.jpg',mask_ext='.png'):
         self.transform = transform
         self.mask_transform = mask_transform
         self.resize = resize
@@ -55,7 +55,6 @@ class PhotoDataset(Dataset):
         self.rotate = rotate
         self.masks_dir = label_path
         self.class_label = class_label
-        self.CSAS = CSAS
         self.img_ext = img_ext
         self.mask_ext = mask_ext
         
@@ -71,7 +70,7 @@ class PhotoDataset(Dataset):
                          file[2]) for file in files]
         else:
             self.samples = [(os.path.join(data_path,file[0].replace(" ", "")), os.path.join(label_path,file[0].replace(" ", "")), 
-                         file[0].replace(" ", "")) for file in files]
+                          file[2]) for file in files]
             
             self.ids = [splitext(file)[0] for file in listdir(data_path)
                         if (not file.startswith('.') and os.path.isfile(os.path.join(data_path,file)))]
@@ -136,14 +135,9 @@ class PhotoDataset(Dataset):
 
             # rotate
             if self.rotate:
-                if self.CSAS:
-                    angle = randint(0, 71) * 5
-                    image = image.rotate(angle)
-                    mask = mask.rotate(angle)
-                else:
-                    angle = randint(0, 3) * 90
-                    image = image.rotate(angle)
-                    mask = mask.rotate(angle)
+                angle = randint(0, 3) * 90
+                image = image.rotate(angle)
+                mask = mask.rotate(angle)
                     
 
             # flip
@@ -153,30 +147,14 @@ class PhotoDataset(Dataset):
 
         if self.transform is not None:
             image = self.transform(image)
-            if self.CSAS:
-                h, w = mask.size[0], mask.size[1]
-                #Fill rotate image with negative ones if area is result of data augmentation
-                class_mask = -torch.ones((h,w),dtype=torch.long)
-                temp_mask = torch.from_numpy(np.array(mask)).permute(2, 0, 1).contiguous()
-                for k in self.mapping:
-                    # Get all indices for current class
-                    idx = (temp_mask==torch.tensor(k, dtype=torch.uint8).unsqueeze(1).unsqueeze(2))
-                    validx = (idx.sum(0) == 3)
-                    class_mask[validx] = torch.tensor(self.mapping[k], dtype=torch.long)
-                    
-                # plt.figure();plt.imshow(class_mask)
-                # plt.figure();plt.imshow(mask)
-                # plt.figure();plt.imshow(image.permute(1, 2, 0))
-                # pdb.set_trace()
-                mask = class_mask
+         
+            mask = self.mask_transform(mask)
+            if self.class_label:
+                #Preprocess to be binary
+                mask = (mask != 0).long()
             else:
-                mask = self.mask_transform(mask)
-                if self.class_label:
-                    #Preprocess to be binary
-                    mask = (mask != 0).long()
-                else:
-                    #Clean up masks, software leaves two labels (1,2) for fat
-                    mask[mask>=.5] = 1
-                    mask[mask<.5] = 0
+                #Clean up masks, software leaves two labels (1,2) for fat
+                mask[mask>=.5] = 1
+                mask[mask<.5] = 0
 
         return {'image':image,'mask': mask, 'index': img_name, 'label': label}

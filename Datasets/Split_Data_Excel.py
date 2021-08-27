@@ -87,3 +87,19 @@ if __name__ == '__main__':
     for folds in range(0,3):
         split.save_excel(fold=folds)
     
+
+    © 2021 GitHub, Inc.
+    Terms
+    Privacy
+    Security
+    Status
+    Docs
+
+    Contact GitHub
+    Pricing
+    API
+    Training
+    Blog
+    About
+
+Loading complete

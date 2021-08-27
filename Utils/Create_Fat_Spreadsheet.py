@@ -32,7 +32,7 @@ def Generate_Dir_Name(split,Network_parameters):
     else:
         dir_name = (Network_parameters['folder'] + '/'+ Network_parameters['mode'] 
                     + '/' + Network_parameters['Dataset'] + '/' +
-                    Network_parameters['Model_names'][Network_parameters['model_selection']] 
+                    Network_parameters['Model_name'] 
                     + '/Run_' + str(split + 1) + '/')  
     
     #Location to save figures
@@ -49,10 +49,10 @@ def add_to_excel(table,writer,model_names,img_names,fold=1):
     DF.to_excel(writer,sheet_name='Fold_{}'.format(fold+1))
 
 def Generate_Fat(indices,mask_type,seg_models,device,folds,num_classes,
-                 fat_df,folder,temp_params=None):
+                 fat_df,folder,args,temp_params=None):
 
     if temp_params is None:
-        temp_params = Parameters()
+        temp_params = Parameters(args)
         
     model_names = []
     model_names.append('Ground Truth')
@@ -62,14 +62,18 @@ def Generate_Fat(indices,mask_type,seg_models,device,folds,num_classes,
         model_names.append(seg_models[key])
     del key
     
-    for phase in ['val','test']:
+    #Create Training and Validation folder
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    
+    for phase in ['train','val']:
         
         writer = pd.ExcelWriter(folder+'{}_Fat_Measures.xlsx'.format(phase.capitalize()),engine='xlsxwriter')
         
         for split in range(0,folds):
             
             #Generate dataloaders and pos wt
-            dataloaders = Get_Dataloaders(split,indices,temp_params,temp_params['batch_size'])
+            dataloaders, pos_wt = Get_Dataloaders(split,indices,temp_params,temp_params['batch_size'])
         
         #Initialize table for data
             fat_table = []
@@ -100,9 +104,10 @@ def Generate_Fat(indices,mask_type,seg_models,device,folds,num_classes,
                     # Initialize the histogram model for this run
                     for key in seg_models:
                         
-                        temp_params = Parameters(model=seg_models[key])
+                        setattr(args, 'model', seg_models[key])
+                        temp_params = Parameters(args)
                         
-                        model_name = temp_params['Model_names'][temp_params['model_selection']]
+                        model_name = temp_params['Model_name']
                 
                         model = initialize_model(model_name, num_classes,
                                                         temp_params)
@@ -130,7 +135,7 @@ def Generate_Fat(indices,mask_type,seg_models,device,folds,num_classes,
                         torch.cuda.empty_cache()
     
                         #Compute estimated fat
-                        temp_fat[key+1] = preds[0].count_nonzero().item() * (temp_org_size/temp_ds_size) * (temp_org_rate/1000)**2
+                        temp_fat[key+1] = preds[0].count_nonzero().item() * (temp_org_size/temp_ds_size) * (temp_org_rate)**2
                      
                     #Save fat value for models
                     fat_table.append(temp_fat)

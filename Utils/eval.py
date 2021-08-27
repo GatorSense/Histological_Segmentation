@@ -41,6 +41,7 @@ def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
     f1_score = 0
     adj_rand = 0
     mAP = 0
+    spec = 0
     #Intialize Hausdorff Distance object
     hausdorff_pytorch = HausdorffDistance()
 
@@ -87,6 +88,7 @@ def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
             adj_rand += Average_Metric(pred, true_masks,metric_name='Rand')
             iou_score += Average_Metric(pred, true_masks,metric_name='IOU_All')
             val_acc += Average_Metric(pred, true_masks,metric_name='Acc')
+            spec += Average_Metric(pred, true_masks,metric_name='Spec')
             n_val += true_masks.size(0)
             
     if n_classes > 1:
@@ -100,7 +102,7 @@ def eval_net(net, loader, device,pos_wt=torch.tensor(1),best_wts=None):
                     'overall_IOU': iou_score/ n_val,'pixel_acc': val_acc / n_val,
                     'haus_dist': haus_dist / (n_val-haus_count+1e-7),'adj_rand': adj_rand / n_val,
                     'precision': prec / n_val,'recall': rec / n_val,
-                    'f1_score': f1_score / n_val}
+                    'f1_score': f1_score / n_val, 'specificity': spec/n_val}
         
     return metrics
 
@@ -179,6 +181,8 @@ def Average_Metric(input,target,pos_wt=None,metric_name='Prec',ignore_channels=N
                                                     pos_weight=pos_wt).item()
         elif metric_name == 'Dice_Loss':
             s += 1-f_score(c[1],c[0],ignore_channels=ignore_channels).item()
+        elif metric_name == 'Spec':
+            s += specificity(c[1],c[0],ignore_channels=ignore_channels).item()
         else:
             raise RuntimeError('Metric is not implemented')
         

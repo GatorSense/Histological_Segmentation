@@ -38,8 +38,6 @@ import pdb
 #Turn off plotting
 plt.ioff()
 
-
-
 def main(Params,args):
     torch.cuda.empty_cache()
     CUDA_LAUNCH_BLOCKING=1
@@ -171,8 +169,8 @@ def parse_args():
                         help='Location to save models')
     parser.add_argument('--model', type=str, default='JOSHUA+',
                         help='Select model to train with (default: JOSHUA+')
-    parser.add_argument('--data_selection', type=int, default=3,
-                        help='Dataset selection:  1: SFBHI, 2: GlaS, 3:CSAS')
+    parser.add_argument('--data_selection', type=int, default=1,
+                        help='Dataset selection:  1: SFBHI, 2: GlaS')
     parser.add_argument('--channels', type=int, default=3,
                         help='Input channels of network (default: 3, RGB images)')
     parser.add_argument('--bilinear', type=bool, default=True,

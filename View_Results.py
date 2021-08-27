@@ -27,6 +27,7 @@ from Utils.Create_Individual_Figures import Generate_Images
 from Utils.Capture_Metrics import Get_Metrics
 from Utils.create_dataloaders import Get_Dataloaders
 from Utils.Create_Fat_Spreadsheet import Generate_Fat
+from Utils.Capture_SFBHI_Metrics import Compute_SFBHI_Metrics
 
 plt.ioff()
 
@@ -44,8 +45,6 @@ def main(Params,args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # device = torch.device('cpu')
  
-    NumRuns = Params['Splits'][Params['Dataset']]
-    
     #Name of dataset
     Dataset = Params['Dataset']
     
@@ -58,11 +57,16 @@ def main(Params,args):
     #Metrics to capture
     if num_classes == 1:
         metrics = {'dice': 'Dice Coefficent', 'overall_IOU': 'IOU','pos_IOU': 'Positive IOU',
-                   'haus_dist': 'Hausdorff distance', 'adj_rand': 'Adjusted Rand Index',
-                   'precision': 'Precision', 'recall': 'Recall', 'f1_score': 'F1 Score',
-                   'specificity': 'Specificity',
-                   'pixel_acc': 'Pixel Accuracy','loss': 'Binary Cross Entropy',
-                   'inf_time': 'Inference Time'}
+                    'haus_dist': 'Hausdorff distance', 'adj_rand': 'Adjusted Rand Index',
+                    'precision': 'Precision', 'recall': 'Recall', 'f1_score': 'F1 Score',
+                    'specificity': 'Specificity',
+                    'pixel_acc': 'Pixel Accuracy','loss': 'Binary Cross Entropy',
+                    'inf_time': 'Inference Time'}
+        # metrics = {'dice': 'Dice Coefficent', 'overall_IOU': 'IOU','pos_IOU': 'Positive IOU',
+        #            'haus_dist': 'Hausdorff distance', 'adj_rand': 'Adjusted Rand Index',
+        #            'precision': 'Precision', 'recall': 'Recall', 'f1_score': 'F1 Score',
+        #            'pixel_acc': 'Pixel Accuracy','loss': 'Binary Cross Entropy',
+        #            'inf_time': 'Inference Time'}
     else:
         metrics = {'dice': 'F1 Score', 'jacc': 'Jaccard/IOU', 'pixel_acc': 'Overall Pixel Accuracy',
                    'class_acc': 'Pixel Class Accuarcy', 'mAP': 'Mean Average Precision',
@@ -77,32 +81,34 @@ def main(Params,args):
     mask_type = torch.float32 if num_classes == 1 else torch.long
     
     #Compute avg and std deviations of val and train metrics, save in spreadsheet
-    Get_Metrics(metrics,seg_models,args,folds=NumRuns)
+    Get_Metrics(metrics,seg_models,args,folds=numRuns)
     
-    #Load dataframe containing fat information
-    # fat_df = pd.read_excel(r'Labeled Image Reference Length.xlsx')
-    fat_df = None
-    
+    #Load dataframe containing fat and label information
+    fat_df = pd.read_excel(r'Labeled Image Reference Length.xls')
+    labels_df = pd.read_excel(r'Image Name, Week, and Condition.xls')
+   
     #Generate spreadsheet with fat information
     folder = (Params['folder'] + '/'+ Params['mode'] 
-                        + '/' + Params['Dataset'] + '/Fat_Measures/mm_results/')
+                        + '/' + Params['Dataset'] + '/Fat_Measures/um_results/')
    
     if Params['show_fat']:
-        Generate_Fat(indices,mask_type,seg_models,device,NumRuns,
-                 num_classes,fat_df,folder,temp_params=Params)
+        # Generate_Fat(indices,mask_type,seg_models,device,numRuns,
+        #           num_classes,fat_df,folder,args,temp_params=Params)
+        
+        Compute_SFBHI_Metrics(indices,mask_type,metrics,seg_models,device,numRuns,
+                    num_classes,labels_df,args,temp_params=Params)
     
     #Parse through files and plot results
-    for split in range(0, NumRuns):
+    # for split in range(0, numRuns):
         
-        #Generate dataloaders and pos wt
-        dataloaders, pos_wt = Get_Dataloaders(split,indices,Params,Params['batch_size'])
+    #     #Generate dataloaders and pos wt
+    #     dataloaders, pos_wt = Get_Dataloaders(split,indices,Params,Params['batch_size'])
     
-        #Save figures for individual images
-        Generate_Images(dataloaders,mask_type,seg_models,device,split,
-                        num_classes,fat_df,args,alpha=.20,show_fat=Params['show_fat'])
+    #     #Save figures for individual images
+    #     Generate_Images(dataloaders,mask_type,seg_models,device,split,
+    #                     num_classes,fat_df,args,alpha=.15,show_fat=Params['show_fat'])
     
-     
-        print('**********Run ' + str(split+1) + ' Finished**********')
+    #     print('**********Run ' + str(split+1) + ' Finished**********')
         
 def parse_args():
         # 'UNET'
@@ -117,12 +123,12 @@ def parse_args():
                         help='Save results of experiments at each checkpoint (default: False)')
     parser.add_argument('--save_epoch', type=int, default=5,
                         help='Epoch for checkpoint (default: 5')
-    parser.add_argument('--folder', type=str, default='Saved_Models/',
+    parser.add_argument('--folder', type=str, default='HPG_Results/Journal_Paper_Results_V4/8_weeks_BCE/',
                         help='Location to save models')
     parser.add_argument('--model', type=str, default='JOSHUA+',
                         help='Select model to train with (default: JOSHUA+')
-    parser.add_argument('--data_selection', type=int, default=3,
-                        help='Dataset selection:  1: SFBHI, 2: GlaS, 3:CSAS')
+    parser.add_argument('--data_selection', type=int, default=1,
+                        help='Dataset selection:  1: SFBHI, 2: GlaS')
     parser.add_argument('--channels', type=int, default=3,
                         help='Input channels of network (default: 3, RGB images)')
     parser.add_argument('--bilinear', type=bool, default=True,
@@ -133,7 +139,7 @@ def parse_args():
                         help='Training data will be rotated, random flip (p=.5), random patch extraction (default:True')
     parser.add_argument('-numBins', type=int, default=16,
                         help='Number of bins for histogram layer. Recommended values are 4, 8 and 16. (default: 16)')
-    parser.add_argument('--feature_extraction', type=bool, default=True,
+    parser.add_argument('--feature_extraction', type=bool, default=False,
                         help='Flag for feature extraction. False, train whole model. True, only update fully connected and histogram layers parameters (default: True)')
     parser.add_argument('--use_pretrained', type=bool, default=False,
                         help='Flag to use pretrained model from ImageNet or train from scratch (default: False)')
