@@ -58,7 +58,7 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
         model_names.append(seg_models[key])
     
     hausdorff_pytorch = HausdorffDistance()
-    for phase in ['val']:
+    for phase in ['val','test']:
     
         img_count = 0
         for batch in dataloaders[phase]:
@@ -71,7 +71,7 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
             for img in range(0,imgs.size(0)):
         
                 #Create figure for each image
-                temp_fig, temp_ax = plt.subplots(nrows=2,ncols=len(seg_models)+2,figsize=(16,8))
+                temp_fig, temp_ax = plt.subplots(nrows=1,ncols=len(seg_models)+2,figsize=(16,8))
                 
                 #Initialize fat array
                 if show_fat:
@@ -79,20 +79,22 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                 
                 #Get conversion rate from pixels to fat
                 if show_fat:
-                    temp_org_size = fat_df.loc[fat_df['Image Name (.tif)']==idx[img]]['# of Pixels'].iloc[-1]
-                    temp_ds_size = fat_df.loc[fat_df['Image Name (.tif)']==idx[img]]['Down sampled # of Pixels'].iloc[-1]
-                    temp_org_rate = fat_df.loc[fat_df['Image Name (.tif)']==idx[img]]['Reference Length (um/px)'].iloc[-1]
+                    temp_org_size = fat_df.loc[fat_df['Image Name (.tif)'].replace(" ", "")==idx[img].replace(" ", "")]['# of Pixels'].iloc[-1]
+                    temp_ds_size = fat_df.loc[fat_df['Image Name (.tif)'].replace(" ", "")==idx[img].replace(" ", "")]['Down sampled # of Pixels'].iloc[-1]
+                    temp_org_rate = fat_df.loc[fat_df['Image Name (.tif)'].replace(" ", "")==idx[img].replace(" ", "")]['Reference Length (um/px)'].iloc[-1]
         
                 #Plot images, hand labels, and masks
-                temp_ax[0,0].imshow(imgs[img].cpu().permute(1, 2, 0))
-                temp_ax[0,0].tick_params(axis='both', labelsize=0, length = 0)
+                temp_ax[0].imshow(imgs[img].cpu().permute(1, 2, 0))
+                temp_ax[0].tick_params(axis='both', labelsize=0, length = 0)
                 
                 if num_classes == 1:
-                    temp_ax[0,1].imshow(imgs[img].cpu().permute(1,2,0))
-                    temp_ax[0,1].imshow(true_masks[img][0].cpu(),'jet',interpolation=None,alpha=alpha)
-                    temp_ax[0,1].tick_params(axis='both', labelsize=0, length = 0)
-                    temp_ax[1,1].imshow(true_masks[img][0].cpu(),cmap='gray')
-                    temp_ax[1,1].tick_params(axis='both', labelsize=0, length = 0)
+                    temp_ax[1].imshow(imgs[img].cpu().permute(1,2,0))
+                    M, N = true_masks[img][0].shape
+                    temp_overlap = np.zeros((M,N,3))
+                    gt_mask = true_masks[img][0].cpu().numpy().astype(dtype=bool)
+                    temp_overlap[gt_mask,:] = [5/255, 133/255, 176/255]
+                    temp_ax[1].imshow(temp_overlap,'jet',interpolation=None,alpha=alpha)
+                    temp_ax[1].tick_params(axis='both', labelsize=0, length = 0)
                 else:
                     temp_ax[0,1].imshow(imgs[img].cpu().permute(1,2,0))
                     temp_true = decode_segmap(true_masks[img].cpu().numpy())
@@ -114,19 +116,16 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                     col_names = ['Input Image', 'Ground Truth'] + model_names
                 cols = ['{}'.format(col) for col in col_names]
                 
-                for ax, col in zip(axes[0], cols):
+                for ax, col in zip(axes, cols):
                     ax.set_title(col)
             
                 
-                # Initialize the histogram model for this run
+                # Initialize the segmentation model for this run
                 for key in seg_models:
                     
                     setattr(args, 'model', seg_models[key])
                     temp_params = Parameters(args)
-                    
-            
                     model = initialize_model(seg_models[key], num_classes,temp_params)
-                    
                     sub_dir, fig_dir = Generate_Dir_Name(split, temp_params)
                     
                     #If parallelized, need to set model
@@ -150,34 +149,27 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                     with torch.no_grad():
                         preds = model(imgs[img].unsqueeze(0))
                     
-                    #Plot images with masks overlaid (alpha = .15 for histological images)
-                    temp_ax[0,key+2].imshow(imgs[img].cpu().permute(1,2,0))
-                    
                     if num_classes == 1:
                         preds = (torch.sigmoid(preds) > .5).float()
-                        temp_ax[0,key+2].imshow(preds[0].cpu().permute(1,2,0)[:,:,0],'jet',
-                                                interpolation=None,alpha=alpha)
-                        temp_ax[0,key+2].tick_params(axis='both', labelsize=0, length = 0)
                         
                         #Plot masks only
-                        temp_ax[1,key+2].imshow(preds[0].cpu().permute(1,2,0)[:,:,0],cmap='gray')
-                        temp_ax[1,key+2].tick_params(axis='both', labelsize=0, length = 0)
+                        M, N = true_masks[img][0].shape
+                        temp_overlap = np.zeros((M,N,3))
+                        preds_mask = preds[0].cpu().permute(1,2,0)[:,:,0].numpy().astype(dtype=bool)
+                        gt_mask = true_masks[img][0].cpu().numpy().astype(dtype=bool)
+                        temp_overlap[:,:,0] = preds_mask
+                        temp_overlap[:,:,1] = gt_mask
                         
-                        #Computed weighted IOU (account for class imbalance)
-                        temp_IOU_pos = iou(preds,true_masks[img]).item()
-                        try:
-                            temp_haus = hausdorff_pytorch.compute(preds,true_masks[img].unsqueeze(0)).item()
-                        except:
-                            temp_haus = 'inf'
-                        f1_score = np.round(f_score(preds,true_masks[img]).item(),decimals=2)
-                        temp_true_masks = true_masks[img].cpu().numpy().reshape(-1).astype(int)
-                        temp_preds = preds[0].cpu().numpy().reshape(-1).astype(int)
-                        temp_ax[1,key+2].set_title('{} IOU: {:.2f}, \n Dice (F1): {:.2f}, \n Hausdorff: {:.2f}'.format(class_name,
-                                                                                                              temp_IOU_pos, 
-                                                                                                               f1_score,
-                                                                                                               temp_haus))
+                        #Convert to color blind
+                        #Output
+                        temp_overlap[preds_mask,:] = [202/255, 0/255, 32/255]
+                        temp_overlap[gt_mask, :] = [5/255, 133/255, 176/255]
+                        agreement = preds_mask * gt_mask
+                        temp_overlap[agreement, :] = [155/255, 191/255, 133/255]
                         
-                        del temp_haus
+                        temp_ax[key+2].imshow(imgs[img].cpu().permute(1,2,0))
+                        temp_ax[key+2].imshow(temp_overlap,alpha=alpha)
+                        temp_ax[key+2].tick_params(axis='both', labelsize=0, length = 0)
                         
                     else:
                         temp_pred = torch.argmax(preds[0], dim=0).detach().cpu().numpy()
@@ -200,22 +192,9 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                     #Compute estimated fat
                     if show_fat:
                         temp_fat[key+1] = preds[0].count_nonzero().item() * (temp_org_size/temp_ds_size) * (temp_org_rate)**2
-                 
-                #Plot estimated fat area and highlight model closest to actual value
-                if show_fat:
-                    y_pos = np.arange(len(temp_fat))
-                    rects = temp_ax[1,0].bar(y_pos,temp_fat)
-                    temp_ax[1,0].set_xticks(y_pos)
-                    temp_ax[1,0].set_xticklabels(col_names[1:],rotation=90)
-                    temp_ax[1,0].set_ylabel('Est Fat Area ($\u03BCm^2$)')
-                    temp_ax[1,0].patches[np.argmin(abs(temp_fat[1:]-temp_fat[0]))+1].set_facecolor('#aa3333')
-                    temp_ax[1,0].set_title('Est Fat Area ($\u03BCm^2$) for Each Model: \n' + str())
-                else:
-                    temp_ax[1,0].set_frame_on(False)
-                    temp_ax[1,0].tick_params(axis='both', labelsize=0, length = 0)
-        
                 
-                folder = fig_dir + '{}_Images/Run_{}/'.format(phase.capitalize(),split+1)
+                folder = fig_dir + '{}_Segmentation_Maps/Run_{}/'.format(phase.capitalize(),split+1)
+                
                 #Create Training and Validation folder
                 if not os.path.exists(folder):
                     os.makedirs(folder)
@@ -225,7 +204,6 @@ def Generate_Images(dataloaders,mask_type,seg_models,device,split,
                 temp_fig.savefig(img_name,dpi=temp_fig.dpi)
                 plt.close(fig=temp_fig)
             
-                
                 img_count += 1
                 print('Finished image {} of {} for {} dataset'.format(img_count,len(dataloaders[phase].sampler),phase))
         

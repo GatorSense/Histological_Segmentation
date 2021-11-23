@@ -51,8 +51,6 @@ class DataSplitExcel:
         df = df.apply(lambda x: x.str.rstrip() if x.dtype == "object" else x)
         img_list = df['Image Name'].tolist()
         
-        #Do not need this anymore, verified image names match excel sheet given
-        
         # #Remove 'scale' to be consistent with names of images from excel file and image
         img_list_new = [os.path.splitext(x)[0].replace(" ", "").split('-scale')[0] for x in img_list]
         img_names_new = [os.path.splitext(x)[0].replace(" ", "").split('-scale')[0] for x in mask_img_inter]
@@ -62,9 +60,6 @@ class DataSplitExcel:
         ind_dict = dict((k,i) for i,k in enumerate(img_names_new))
         inter_names = set(ind_dict).intersection(img_list_new)
         indices = [ ind_dict[x] for x in inter_names ]
-        
-        #Check which images are not included (no condition or week provided)
-        # diff_imgs = list(set(img_list_new) - (inter_names))
         
         #Map valid image names back to existing files
         img_names = [mask_img_inter[x] for x in indices]
@@ -146,19 +141,26 @@ class DataSplitExcel:
 
     
 if __name__ == '__main__':
+    
+    #Set image, mask, and label (excel file) path
     img_path = 'SFBHI/Images/'
     mask_path = 'SFBHI/Labels/'
     label_path = 'Image Name, Week, and Condition.xlsx'
+    
+    #Set k fold (k = 5 in paper, unless 4 fold with time)
     k_fold = 5
+    
+    #Fix random seed for repeatibility (random seed set to 1 for paper)
     random_seed = 1
-  
-    # split = DataSplitExcel(img_path, mask_path, train_split=0.70, val_split=0.15,
-    #              random_seed=random_seed,shuffle=True,img_extension='jpeg',mask_extension='jpeg',
-    #              CV=True,folds=k_fold,label_file=label_path,label_selection='time')
+    
+    #Label selection for stratified k-fold option 
+    #Set to either 'time' and 'condition' to use label information, 
+    #else random partitions are chosen
+    label_selection = 'condition'
     
     split = DataSplitExcel(img_path, mask_path, train_split=0.70, val_split=0.15,
                   random_seed=random_seed,shuffle=True,img_extension='jpeg',mask_extension='jpeg',
-                  CV=True,folds=k_fold,label_file=label_path,label_selection='condition')
+                  CV=True,folds=k_fold,label_file=label_path,label_selection=label_selection)
     
     for folds in range(0,k_fold):
         split.save_excel(fold=folds)

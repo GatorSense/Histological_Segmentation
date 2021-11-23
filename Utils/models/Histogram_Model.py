@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch
 
 ## Local external libraries
-from .histunet_parts import *
+from .JOSHUA_parts import *
 
 import pdb
 

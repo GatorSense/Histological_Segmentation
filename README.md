@@ -1,25 +1,25 @@
 # Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA):
-**Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
-adipose tissue identification in histological images of lyophilized silk 
-sponge implants**
+**Jointly Optimized Spatial Histogram UNET 
+Architecture (JOSHUA) for Adipose Tissue Segmentation**
 
 ![abstract](Figures/Graphical_Abstract_Background.PNG)
 
 _Joshua Peeples, Julie Jameson, Nisha Kotta, Whitney Stoppel, and Alina Zare_
 
-Note: If this code is used, cite it: Joshua Peeples, Julie Jameson, Nisha Kotta, Whitney Stoppel, and Alina Zare. 
-(2021, May 11). GatorSense/Histological_Segmentation: Initial Release (Version v1.0). 
+Note: If this code is used, cite it: Joshua Peeples, Julie Jameson, Nisha Kotta, 
+Jonathan M. Grasman, Whitney Stoppel, and Alina Zare. 
+(2021, November 23). GatorSense/Histological_Segmentation: Initial Release (Version v1.0). 
 Zendo. https://doi.org/10.5281/zenodo.3731417
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3731417.svg)](https://doi.org/10.5281/zenodo.3731417)
 
-[[`arXiv`](https://arxiv.org/abs/2001.00215)]
+[[`bioRxiv`](https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463)]
 
 [[`BibTeX`](#CitingHist)]
 
 
-In this repository, we provide the paper and code for histological segmentation models from "Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
-adipose tissue identification in histological images of lyophilized silk 
-sponge implants."
+In this repository, we provide the paper and the code for the histological 
+segmentation models from "Jointly Optimized Spatial Histogram UNET 
+Architecture (JOSHUA) for Adipose Tissue Segmentation."
 
 ## Installation Prerequisites
 
@@ -34,7 +34,7 @@ run `View_Results.py` (if results are saved out).
 ## Main Functions
 
 The segmentation models (U-Net, Attention U-Net, U-Net+, JOSHUA, and JOSHUA+)
-runs using the following functions. 
+run using the following functions. 
 
 1. Prepare dataset(s) for model 
 
@@ -61,24 +61,28 @@ The parameters can be set in the following script:
 ## Inventory
 
 ```
-https://github.com/GatorSense/Histological_Segmetation
+https://github.com/GatorSense/Histological_Segmentation
 
 └── root dir
     ├── demo.py   //Run this. Main demo file.
     ├── Demo_Parameters.py // Parameters file for demo.
+    ├── Image Name, Week, and Condition.csv // Image name, week, and condition information for SFBHI.
     ├── Labeled Image Reference Length.csv // Adipose tissue information for SFBHI.
     ├── Prepare_Data.py  // Load data for demo file.
     ├── View_Results.py // Run this after demo to view saved results.
     └── Utils  //utility functions
-        ├── capture_metrics.py  // Record evaluation metrics in excel spreadsheet.
+        ├── Capture_Metrics.py  // Record evaluation metrics in excel spreadsheet.
         ├── create_dataloaders.py  // Generate Pytorch dataloaders for each dataset.
-        ├── create_individual_figures.py  // Create figures to display segmentation results.
+        ├── Create_Fat_Spreadsheet.py  // Create spreadsheet of estimated adipose tissue.
+        ├── create_individual_RGB_figures.py  // Create figures to display segmentation results.
         ├── dataset.py  // Load training, validation, and test splits.
         ├── eval.py  // Evaluate models on validation and test data.
         ├── functional.py  // Contains functions to compute evaluation metrics.
-        ├── initialize_model.py  // Initialize segmentation model(s).
+        ├── Initialize_Model.py  // Initialize segmentation model(s).
+        ├── metrics.py  // Compute additional metrics to evaluate model's performance.
+        ├── pytorchtools.py  // Implement early stopping to terminate training based on validation metrics.
         ├── RBFHistogramPooling.py  // Create histogram layer. 
-        ├── save_results.py  // Save results from demo script.
+        ├── Save_Results.py  // Save results from demo script.
         ├── train.py  // Train and evaluate model.
         ├── utils.py  // Functions for data augmentation.
         └── models  // individual model parts
@@ -94,30 +98,32 @@ https://github.com/GatorSense/Histological_Segmetation
 This source code is licensed under the license found in the [`LICENSE`](LICENSE) 
 file in the root directory of this source tree.
 
-This product is Copyright (c) 2021 J. Peeples, J. Jameson, N. Kotta, W. Stoppel, 
-and A. Zare. All rights reserved.
+This product is Copyright (c) 2021 J. Peeples, J. Jameson, N. Kotta, J. Grasman,
+W. Stoppel, and A. Zare. All rights reserved.
 
 ## <a name="CitingHist"></a>Citing Histological Segmentation
 
-If you use the histological segmentation code, please cite the following 
-reference using the following entry.
+If you use the histological segmentation code, please cite the paper using the 
+following entry.
 
 **Plain Text:**
 
-Peeples, J., Jameson, J., Kotta, N., Stoppel, W., & Zare, A. (2021). Jointly 
-Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
-adipose tissue identification in histological images of lyophilized silk 
-sponge implants. arXiv preprint TBD.
+Peeples, J., Jameson, J., Kotta, N., Grasman, J., Stoppel, W., & Zare, A. Jointly 
+Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue 
+Segmentation. bioRxiv, 2021. doi: 10.1101/2021.11.22.469463.  
 
 **BibTex:**
 ```
-@article{peeples2021jointly,
-  title={Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
-adipose tissue identification in histological images of lyophilized silk 
-sponge implants},
-  author={Peeples, Joshua and Jameson, Julie and Kotta, Nisha, and Stoppel, Whitney, and Zare, Alina},
-  journal={arXiv preprint TBD},
-  year={2021}
+@article {Peeples2021.11.22.469463,
+	author = {Peeples, Joshua K and Jameson, Julie F and Kotta, Nisha M and Grasman, Jonathan M and Stoppel, Whitney L and Zare, Alina},
+	title = {Jointly Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue Segmentation},
+	elocation-id = {2021.11.22.469463},
+	year = {2021},
+	doi = {10.1101/2021.11.22.469463},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463},
+	eprint = {https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463.full.pdf},
+	journal = {bioRxiv}
 }
 ```
 

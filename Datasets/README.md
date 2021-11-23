@@ -26,6 +26,10 @@ and follow these instructions:
                 ├── fold_4
     ├── Labels  // Contains labels for each training/validation fold.   
 ```
+## Generate new data splits:
+If new data splits are desired for the SFBHI dataset, please use `Split_SFBHI.py`
+to generate new paritions of the dataset.
+
 ## <a name="CitingSFBHI"></a>Citing SFBHI
 
 If you use the SFBHI dataset, please cite the following reference using the following entry.

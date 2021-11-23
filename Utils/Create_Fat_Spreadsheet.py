@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 
 from Demo_Parameters import Parameters
-from Utils.initialize_model import initialize_model
+from Utils.Initialize_Model import initialize_model
 from Utils.functional import *
 from Utils.create_dataloaders import Get_Dataloaders
 

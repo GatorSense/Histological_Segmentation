@@ -138,12 +138,9 @@ def Parameters(args):
     #Run on multiple GPUs
     parallelize_model = args.parallelize_model
     
-    
     ######## ONLY CHANGE PARAMETERS ABOVE ########
-    if feature_extraction:
-        mode = 'Feature_Extraction'
-    else:
-        mode = 'Fine_Tuning'
+    mode = '{}_Split_RandSeed_{}'.format(args.data_split,args.random_state)
+
     
     #Location of segmentation datasets (images and masks)
     img_dirs = {'SFBHI': './Datasets/SFBHI/Images/', 
@@ -160,8 +157,13 @@ def Parameters(args):
     
     #Number of runs and/or splits for each dataset (5 fold)
     #For SFBHI, should be 5 unless "time" split (4)
-    Splits = {'SFBHI': 4, 
+    if (args.data_split == 'Time_Folds') or (args.data_split == 'Val_Week_8'):
+        Splits = {'SFBHI': 4, 
               'GlaS': 5}
+    else:
+        Splits = {'SFBHI': 5, 
+              'GlaS': 5}
+
     
     Dataset = Dataset_names[data_selection]
     imgs_dir = img_dirs[Dataset]

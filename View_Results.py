@@ -3,7 +3,7 @@
 Created on Mon Oct 28 10:15:33 2019
 Generate results from saved models
 Note: Script should be used if ALL models are saved out
-If only interested in certain models, modify the "seg_models"
+If only interested in certain models, modify the "seg_models" (Line 69)
 dictionary to only include models of interests
 @author: jpeeples
 """
@@ -23,11 +23,10 @@ import torch
 ## Local external libraries
 from Demo_Parameters import Parameters
 from Prepare_Data import Prepare_DataLoaders
-from Utils.Create_Individual_Figures import Generate_Images
+from Utils.Create_Individual_RGB_Figures import Generate_Images
 from Utils.Capture_Metrics import Get_Metrics
 from Utils.create_dataloaders import Get_Dataloaders
 from Utils.Create_Fat_Spreadsheet import Generate_Fat
-from Utils.Capture_SFBHI_Metrics import Compute_SFBHI_Metrics
 
 plt.ioff()
 
@@ -62,11 +61,6 @@ def main(Params,args):
                     'specificity': 'Specificity',
                     'pixel_acc': 'Pixel Accuracy','loss': 'Binary Cross Entropy',
                     'inf_time': 'Inference Time'}
-        # metrics = {'dice': 'Dice Coefficent', 'overall_IOU': 'IOU','pos_IOU': 'Positive IOU',
-        #            'haus_dist': 'Hausdorff distance', 'adj_rand': 'Adjusted Rand Index',
-        #            'precision': 'Precision', 'recall': 'Recall', 'f1_score': 'F1 Score',
-        #            'pixel_acc': 'Pixel Accuracy','loss': 'Binary Cross Entropy',
-        #            'inf_time': 'Inference Time'}
     else:
         metrics = {'dice': 'F1 Score', 'jacc': 'Jaccard/IOU', 'pixel_acc': 'Overall Pixel Accuracy',
                    'class_acc': 'Pixel Class Accuarcy', 'mAP': 'Mean Average Precision',
@@ -76,7 +70,7 @@ def main(Params,args):
     
     
     #Return datasets and indices of training/validation data
-    indices = Prepare_DataLoaders(Params,numRuns)
+    indices = Prepare_DataLoaders(Params,numRuns,data_type=args.data_split)
     
     mask_type = torch.float32 if num_classes == 1 else torch.long
     
@@ -92,23 +86,20 @@ def main(Params,args):
                         + '/' + Params['Dataset'] + '/Fat_Measures/um_results/')
    
     if Params['show_fat']:
-        # Generate_Fat(indices,mask_type,seg_models,device,numRuns,
-        #           num_classes,fat_df,folder,args,temp_params=Params)
+        Generate_Fat(indices,mask_type,seg_models,device,numRuns,
+                  num_classes,fat_df,folder,args,temp_params=Params)
         
-        Compute_SFBHI_Metrics(indices,mask_type,metrics,seg_models,device,numRuns,
-                    num_classes,labels_df,args,temp_params=Params)
-    
     #Parse through files and plot results
-    # for split in range(0, numRuns):
+    for split in range(0, numRuns):
         
-    #     #Generate dataloaders and pos wt
-    #     dataloaders, pos_wt = Get_Dataloaders(split,indices,Params,Params['batch_size'])
+        #Generate dataloaders and pos wt
+        dataloaders, pos_wt = Get_Dataloaders(split,indices,Params,Params['batch_size'])
     
-    #     #Save figures for individual images
-    #     Generate_Images(dataloaders,mask_type,seg_models,device,split,
-    #                     num_classes,fat_df,args,alpha=.15,show_fat=Params['show_fat'])
+        #Save figures for individual images
+        Generate_Images(dataloaders,mask_type,seg_models,device,split,
+                        num_classes,fat_df,args,alpha=.6,show_fat=Params['show_fat'])
     
-    #     print('**********Run ' + str(split+1) + ' Finished**********')
+        print('**********Run ' + str(split+1) + ' Finished**********')
         
 def parse_args():
         # 'UNET'
@@ -123,11 +114,11 @@ def parse_args():
                         help='Save results of experiments at each checkpoint (default: False)')
     parser.add_argument('--save_epoch', type=int, default=5,
                         help='Epoch for checkpoint (default: 5')
-    parser.add_argument('--folder', type=str, default='HPG_Results/Journal_Paper_Results_V4/8_weeks_BCE/',
+    parser.add_argument('--folder', type=str, default='HPG_Results/Journal_Data_Splits/',
                         help='Location to save models')
     parser.add_argument('--model', type=str, default='JOSHUA+',
                         help='Select model to train with (default: JOSHUA+')
-    parser.add_argument('--data_selection', type=int, default=1,
+    parser.add_argument('--data_selection', type=int, default=2,
                         help='Dataset selection:  1: SFBHI, 2: GlaS')
     parser.add_argument('--channels', type=int, default=3,
                         help='Input channels of network (default: 3, RGB images)')
@@ -151,7 +142,7 @@ def parse_args():
                         help='input batch size for testing (default: 10)')
     parser.add_argument('--num_epochs', type=int, default=2,
                         help='Number of epochs to train each model for (default: 150)')
-    parser.add_argument('--random_state', type=int, default=1,
+    parser.add_argument('--random_state', type=int, default=2,
                         help='Set random state for K fold CV for repeatability of data/model initialization (default: 1)')
     parser.add_argument('--add_bn', type=bool, default=False,
                         help='Add batch normalization before histogram layer(s) (default: False)')
@@ -171,11 +162,17 @@ def parse_args():
                         help='enables CUDA training')
     parser.add_argument('--use-cuda', action='store_true', default=True,
                         help='enables CUDA training')
+    parser.add_argument('--data_split', type=str, default='Random',
+                help='Select data split SFBHI: Random (default), Time, Condition')
+    parser.add_argument('--week', type=int, default=1,
+                        help='Week for new images without labels. (default: 1)')
     args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
+    
     args = parse_args()
     params = Parameters(args)
     main(params,args)
+
     

@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Demo for histogram layer segmentation networks (JOSHUA/JOSHUA+)
-Current script is only for experiments on
-single cpu/gpu. If you want to run the demo
-on multiple gpus (two were used in paper), 
-please contact me at jpeeples@ufl.edu 
-for the parallel version of 
-demo.py
+Main demo script for histological segmentation models. 
+Used to train all models (modify line 205 to select certain models)
 @author: jpeeples
 """
 
@@ -26,7 +21,7 @@ import torch
 import torch.nn as nn
 
 ## Local external libraries
-from Utils.initialize_model import initialize_model
+from Utils.Initialize_Model import initialize_model
 from Demo_Parameters import Parameters
 from Prepare_Data import Prepare_DataLoaders
 
@@ -39,15 +34,12 @@ import pdb
 plt.ioff()
 
 def main(Params,args):
-    torch.cuda.empty_cache()
-    CUDA_LAUNCH_BLOCKING=1
-    
     # #Reproducibility
-    # torch.manual_seed(Params['random_state'])
-    # np.random.seed(Params['random_state'])
-    # random.seed(Params['random_state'])
-    # torch.cuda.manual_seed(Params['random_state'])
-    # torch.cuda.manual_seed_all(Params['random_state'])
+    torch.manual_seed(Params['random_state'])
+    np.random.seed(Params['random_state'])
+    random.seed(Params['random_state'])
+    torch.cuda.manual_seed(Params['random_state'])
+    torch.cuda.manual_seed_all(Params['random_state'])
     
     #Name of dataset
     Dataset = Params['Dataset']
@@ -72,6 +64,7 @@ def main(Params,args):
     print("Initializing Datasets and Dataloaders...")
     
     #Return indices of training/validation/test data
+    pdb.set_trace()
     indices = Prepare_DataLoaders(Params,numRuns)
     
     #Loop counter
@@ -79,21 +72,12 @@ def main(Params,args):
     
     for split in range(0, numRuns):
         
-        #For CSAS experiments, data splits are the same but random initialization should change
-        #Reproducibility
-        torch.manual_seed(split)
-        np.random.seed(split)
-        random.seed(split)
-        torch.cuda.manual_seed(split)
-        torch.cuda.manual_seed_all(split)
-        
         # Initialize the segmentation model for this run
         model = initialize_model(model_name, num_classes,Params)
         
         # Send the model to GPU if available, use multiple if available
         if torch.cuda.device_count() > 1:
             print("Using", torch.cuda.device_count(), "GPUs!")
-            # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
             model = nn.DataParallel(model)
         model = model.to(device)
     
@@ -102,7 +86,6 @@ def main(Params,args):
         
         #Print number of trainable parameters
         num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-        # print("Number of parameters: %d" % (num_params))  
     
         # Train and evaluate
         try:
@@ -153,7 +136,7 @@ def main(Params,args):
         split += 1
        
 def parse_args():
-        # 'UNET'
+    # 'UNET'
     # 'Attention UNET'
     # 'UNET+'
     # 'JOSHUA'
@@ -207,7 +190,7 @@ def parse_args():
                         help='Resize the image before center crop. (default: 256)')
     parser.add_argument('--center_size', type=int, default=None,
                         help='Center crop image. (default: 256)')
-    parser.add_argument('--lr', type=float, default=0.01,
+    parser.add_argument('--lr', type=float, default=0.001,
                         help='learning rate (default: 0.01)')
     parser.add_argument('--parallelize_model', type=bool, default=True,
                         help='enables CUDA training')
@@ -217,8 +200,9 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
+    
+    #Trains all models
     model_list = ['JOSHUA+','UNET','UNET+','Attention_UNET', 'JOSHUA']
-    # model_list = ['UNET','UNET+','Attention_UNET', 'JOSHUA+']
     args = parse_args()
     
     model_count = 0

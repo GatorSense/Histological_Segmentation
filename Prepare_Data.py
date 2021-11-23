@@ -18,12 +18,23 @@ def csv_reader(fname):
         out = list(csv.reader(f))
     return out
 
-def get_files(folds_dir, split, fold):
+def get_files(folds_dir, split, fold,data_type='time'):
     splits = ['train', 'valid', 'test']
-    csv_dir = join(folds_dir, 'split_{}'.format(split), 'fold_{}'.format(fold))
-    csv_files = [join(csv_dir,  '{}_s_{}_f_{}.csv'.format(s, split, fold)) for s in splits]
+    if data_type == 'Time_Folds':
+        csv_dir = join(folds_dir, 'Time_Folds_split_1', 'fold_{}'.format(fold))
+        csv_files = [join(csv_dir,  '{}_s_time_f_{}.csv'.format(s, fold)) for s in splits]
+    elif data_type == 'Val_Week_8':
+        csv_dir = join(folds_dir, 'Time_Folds_split_1', 'fold_0')
+        csv_files = [join(csv_dir,  '{}_s_time_f_0.csv'.format(s)) for s in splits]
+    elif data_type == 'GlaS':
+        csv_dir = join(folds_dir, 'split_{}'.format(split), 'fold_{}'.format(fold))
+        csv_files = [join(csv_dir,  '{}_s_{}_f_{}.csv'.format(s, split, fold)) for s in splits]
+    else:
+        csv_dir = join(folds_dir, '{}_split_{}'.format(data_type,split), 'fold_{}'.format(fold))
+        csv_files = [join(csv_dir,  '{}_s_{}_f_{}.csv'.format(s, split, fold)) for s in splits]
     split_files = [csv_reader(csv) for csv in csv_files]
     return split_files
+
 
 def decode_classes(files: list,class_label=True) -> list:
     if class_label:
@@ -41,7 +52,7 @@ def decode_classes(files: list,class_label=True) -> list:
                 files_decoded_classes.append((f[0]+'.jpeg',f[0]+'.jpeg',f[0]+'.jpeg')) 
     return files_decoded_classes
 
-def Prepare_DataLoaders(Network_parameters, splits):
+def Prepare_DataLoaders(Network_parameters, splits, data_type='time'):
     Dataset = Network_parameters['Dataset']
     imgs_dir = Network_parameters['imgs_dir']
 
@@ -53,13 +64,12 @@ def Prepare_DataLoaders(Network_parameters, splits):
        val_indices = []
        test_indices = []
        for fold in range(0,splits):
-           # files = get_files(imgs_dir+'folds',1,fold)
-           # files = get_files(imgs_dir+'folds','time',fold)
-           files = get_files(imgs_dir+'folds','time',0)
+           files = get_files(imgs_dir+'folds',1,fold,data_type=data_type)
            temp_train, temp_val, temp_test = [decode_classes(f,class_label=False) for f in files]
            train_indices.append(temp_train)
            val_indices.append(temp_val)
            test_indices.append(temp_test)
+
            
    #Glas Dataset
     elif Dataset == 'GlaS':
@@ -68,7 +78,7 @@ def Prepare_DataLoaders(Network_parameters, splits):
        val_indices = []
        test_indices = []
        for fold in range(0,splits):
-           files = get_files(imgs_dir+'folds',0,fold)
+           files = get_files(imgs_dir+'folds',0,fold,data_type='GlaS')
            temp_train, temp_val, temp_test = [decode_classes(f) for f in files]
            train_indices.append(temp_train)
            val_indices.append(temp_val)

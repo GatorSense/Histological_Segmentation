@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jun 22 16:26:25 2021
-
+Code modified from: https://github.com/Bjarten/early-stopping-pytorch
 @author: jpeeples
 """
 import numpy as np

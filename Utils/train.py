@@ -19,7 +19,6 @@ from .functional import *
 from .metrics import eval_metrics
 from .eval import *
 from barbar import Bar
-from .decode_segmentation import decode_segmap
 from .pytorchtools import EarlyStopping
 
 
@@ -263,26 +262,6 @@ def train_net(net,device,indices,split,Network_parameters,epochs=5,
                         writer.add_scalar('precison/val',val_dict['precision'],global_step)
                         writer.add_scalar('recall/val',val_dict['recall'],global_step)
                         writer.add_scalar('f1_score/val',val_dict['f1_score'])
-                        
-                    #Save images out every save epoch and last epoch
-                    # if (epoch % save_epoch) == 0 or epoch == epochs-1:
-                    #     writer.add_images('images/original/train', imgs, global_step)
-                    #     writer.add_images('images/labeled/train',batch['mask'],global_step)
-                    #     writer.add_images('images/original/val', val_imgs, global_step)
-                    #     writer.add_images('images/labeled/val',val_batch['mask'],global_step)
-                    #     if n_classes == 1:
-                    #         writer.add_images('masks/true/train', true_masks, global_step)
-                    #         writer.add_images('masks/pred/train', torch.sigmoid(masks_pred) > 0.5, global_step)
-                    #         writer.add_images('masks/true/val', val_true_masks, global_step)
-                    #         writer.add_images('masks/pred/val', torch.sigmoid(val_masks_pred) > 0.5, global_step)
-                    #     else:
-                    #         pdb.set_trace()
-                    #         writer.add_images('masks/true/train', true_masks.squeeze(), global_step)
-                    #         temp_imgs = torch.argmax(masks_pred.squeeze(), dim=0).detach().cpu().numpy()
-                    #         writer.add_images('masks/pred/train', decode_segmap(temp_imgs), global_step)
-                    #         writer.add_images('masks/true/val', val_true_masks.squeeze(), global_step)
-                    #         temp_imgs = torch.argmax(val_masks_pred.squeeze(), dim=0).detach().cpu().numpy()
-                    #         writer.add_images('masks/pred/val', decode_segmap(temp_imgs), global_step)
                     
                         val_iter_track.append(val_dict['dice'])
                         global_step += 1
@@ -301,9 +280,6 @@ def train_net(net,device,indices,split,Network_parameters,epochs=5,
             best_dice = val_dice_track[epoch]
             best_wts = net.state_dict()
             best_model = net
-        # if val_dict['loss'] < best_loss:
-        #     best_loss = val_dict['loss']
-        #     best_wts = net.state_dict()
             best_model = net
             val_metrics = val_dict
             
