@@ -66,6 +66,7 @@ https://github.com/GatorSense/Histological_Segmentation
 └── root dir
     ├── demo.py   //Run this. Main demo file.
     ├── Demo_Parameters.py // Parameters file for demo.
+    ├── Get_Histograms.py // Generate intensity histograms for positive and negative samples.
     ├── Image Name, Week, and Condition.csv // Image name, week, and condition information for SFBHI.
     ├── Labeled Image Reference Length.csv // Adipose tissue information for SFBHI.
     ├── Prepare_Data.py  // Load data for demo file.
