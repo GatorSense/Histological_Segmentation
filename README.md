@@ -7,8 +7,8 @@ _Joshua K. Peeples, Julie F. Jameson, Nisha M. Kotta, Jonathan M. Grasman, Whitn
 Note: If this code is used, cite it: Joshua Peeples, Julie Jameson, Nisha Kotta, 
 Jonathan M. Grasman, Whitney Stoppel, and Alina Zare. 
 (2021, November 23). GatorSense/Histological_Segmentation: Initial Release (Version v1.0). 
-Zendo. https://doi.org/10.5281/zenodo.3731417
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3731417.svg)](https://doi.org/10.5281/zenodo.3731417)
+Zendo. https://doi.org/10.5281/zenodo.5722339
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5722339.svg)](https://doi.org/10.5281/zenodo.5722339)
 
 [[`bioRxiv`](https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463)]
 
