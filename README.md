@@ -108,7 +108,7 @@ following entry.
 
 **Plain Text:**
 
-Peeples, J., Jameson, J., Kotta, N., Grasman, J., Stoppel, W., & Zare, A. Jointly 
+Peeples, J. K., Jameson, J. F., Kotta, N. M., Grasman, J. M., Stoppel, W. L., & Zare, A. Jointly 
 Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue 
 Segmentation. bioRxiv, 2021. doi: 10.1101/2021.11.22.469463.  
 

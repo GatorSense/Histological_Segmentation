@@ -36,19 +36,22 @@ If you use the SFBHI dataset, please cite the following reference using the foll
 
 **Plain Text:**
 
-Peeples, J., Jameson, J., Kotta, N., Stoppel, W., & Zare, A. (2021). Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
-adipose tissue identification in histological images of lyophilized silk 
-sponge implants. arXiv preprint TBD.
+Peeples, J. K., Jameson, J. F., Kotta, N. M., Grasman, J. M., Stoppel, W. L., & Zare, A. Jointly 
+Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue 
+Segmentation. bioRxiv, 2021. doi: 10.1101/2021.11.22.469463.  
 
 **BibTex:**
 ```
-@article{peeples2021jointly,
-  title={Jointly Optimized Spatial Histogram U-Net Architecture (JOSHUA) for 
-adipose tissue identification in histological images of lyophilized silk 
-sponge implants},
-  author={Peeples, Joshua and Jameson, Julie and Kotta, Nisha, and Stoppel, Whitney, and Zare, Alina},
-  journal={arXiv preprint TBD},
-  year={2021}
+@article {Peeples2021.11.22.469463,
+	author = {Peeples, Joshua K and Jameson, Julie F and Kotta, Nisha M and Grasman, Jonathan M and Stoppel, Whitney L and Zare, Alina},
+	title = {Jointly Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue Segmentation},
+	elocation-id = {2021.11.22.469463},
+	year = {2021},
+	doi = {10.1101/2021.11.22.469463},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463},
+	eprint = {https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463.full.pdf},
+	journal = {bioRxiv}
 }
 ```
 ## Gland Segmentation in Colon Histology Images (GlaS) [[`BibTeX`](#CitingGlaS)]
