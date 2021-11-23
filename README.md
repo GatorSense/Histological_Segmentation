@@ -1,6 +1,4 @@
 # Jointly Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue Segmentation:
-**Jointly Optimized Spatial Histogram UNET 
-Architecture (JOSHUA) for Adipose Tissue Segmentation**
 
 ![abstract](Figures/Graphical_Abstract_Background.PNG)
 
