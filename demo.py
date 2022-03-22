@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Main demo script for histological segmentation models. 
-Used to train all models (modify line 205 to select certain models)
+Used to train all models (modify line 204 to select certain models)
 @author: jpeeples
 """
 
@@ -64,7 +64,6 @@ def main(Params,args):
     print("Initializing Datasets and Dataloaders...")
     
     #Return indices of training/validation/test data
-    pdb.set_trace()
     indices = Prepare_DataLoaders(Params,numRuns)
     
     #Loop counter
