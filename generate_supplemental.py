@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Generate histograms for datasets (supplemental figures)
+Created on Fri Apr  1 14:10:59 2022
+Generate supplemental figures (histogram and adipose poor images)
 @author: jpeeples
 """
+
 
 ## Python standard libraries
 from __future__ import print_function
@@ -10,21 +12,17 @@ from __future__ import division
 import numpy as np
 import os
 import argparse
-import logging
-import sys
-import random
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 ## PyTorch dependencies
 import torch
-import torch.nn as nn
 
 ## Local external libraries
 from Demo_Parameters import Parameters
 from Prepare_Data import Prepare_DataLoaders
 from Utils.create_dataloaders import Get_Dataloaders
-
 
 import pdb
 
@@ -64,6 +62,8 @@ def main(Params,args):
     G_neg = []
     B_neg = []
     
+    img_list = []
+    percentage = .01
     num_imgs = 0
     
     for split in range(0, numRuns):
@@ -71,7 +71,7 @@ def main(Params,args):
         #Initialize dataloa
         dataloaders, pos_wt = Get_Dataloaders(split,indices,Params,Params['batch_size'])
         
-        #Look at validation images and get RGB values
+        #Look at validation images and get RGB values, validation should cover all training images
         for phase in ['val']:
         
             # img_count = 0
@@ -83,12 +83,12 @@ def main(Params,args):
                 true_masks = true_masks.to(device=device, dtype=torch.float32)
                 
                 #Compute histograms based on postive/negative labels
-                R_pos_temp = imgs[:,0]*true_masks
-                G_pos_temp = imgs[:,1]*true_masks
-                B_pos_temp = imgs[:,2]*true_masks
-                R_neg_temp = imgs[:,0]*true_masks.logical_not().float()
-                G_neg_temp = imgs[:,1]*true_masks.logical_not().float()
-                B_neg_temp = imgs[:,2]*true_masks.logical_not().float()
+                R_pos_temp = torch.masked_select(imgs[:,0],true_masks.gt(0))
+                G_pos_temp = torch.masked_select(imgs[:,1],true_masks.gt(0))
+                B_pos_temp = torch.masked_select(imgs[:,2],true_masks.gt(0))
+                R_neg_temp = torch.masked_select(imgs[:,0],~true_masks.gt(0))
+                G_neg_temp = torch.masked_select(imgs[:,1],~true_masks.gt(0))
+                B_neg_temp = torch.masked_select(imgs[:,2],~true_masks.gt(0))
                 
                 #Upate histogram counts
                 R_pos.append(R_pos_temp.cpu().flatten().numpy())
@@ -98,6 +98,23 @@ def main(Params,args):
                 G_neg.append(G_neg_temp.cpu().flatten().numpy())
                 B_neg.append(B_neg_temp.cpu().flatten().numpy())
                 
+                #Get adipose poor images
+                if args.data_selection == 1:
+                    #Compute fat percentage in image
+                    fat_pixel_count = torch.count_nonzero(true_masks.flatten(start_dim=1),dim=-1)
+                    pixel_count = imgs.size(dim=2)*imgs.size(dim=3)
+                    fat_percent = fat_pixel_count/pixel_count
+    
+                    #Check if pixel fat is greater than percentage
+                    poor_imgs = torch.le(fat_percent,percentage)                 
+                    
+                    #Append image names 
+                    img_count = 0
+                    for img in poor_imgs:
+                        if img:
+                            img_list.append([idx[img_count],np.round_(fat_percent[img_count].item(),decimals=4)])
+                        img_count +=1
+                    
                 num_imgs += imgs.size(0)
                 print('Finished {} Images'.format(num_imgs))
             
@@ -110,8 +127,10 @@ def main(Params,args):
     #G
     if args.data_selection == 2:
         pos_class_name = 'Cancerous Tissue'
+        G_loc = 'upper right'
     else:
         pos_class_name = 'Adipose Tissue'
+        G_loc = 'upper left'
         
     plt.close('all')
     plt.style.use('seaborn-deep')
@@ -124,41 +143,51 @@ def main(Params,args):
     plt.hist([np.concatenate(R_pos, axis=0), np.concatenate(R_neg, axis=0)], bins=set_bins, 
              density=show_density, label=[pos_class_name, 'Background'])
     plt.title('Red Channel Intensity Histogram',fontdict = {'fontsize' : 20})
-    plt.legend(loc='upper right', prop={'size': 14})
+    plt.legend(loc='upper left', prop={'size': 14})
     plt.xlabel('Normalized Intensity Values', fontdict = {'fontsize' : 16})
     plt.ylabel('P(Normalized Intensity Values)', fontdict = {'fontsize' : 16})
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
     plt.subplots_adjust(bottom=0.15)
-    plt.show()
+    plt.savefig('{}/{}_R_Channel_Histogram.png'.format(args.supplemental,Params['Dataset']))
     
     plt.figure()
     plt.hist([np.concatenate(G_pos, axis=0), np.concatenate(G_neg, axis=0)], num_bins, 
              density=show_density, label=[pos_class_name, 'Background'])
     plt.title('Green Channel Intensity Histogram', fontdict = {'fontsize' : 20})
-    plt.legend(loc='upper right', prop={'size': 14})
+    plt.legend(loc=G_loc, prop={'size': 14})
     plt.xlabel('Normalized Intensity Values', fontdict = {'fontsize' : 16})
     plt.ylabel('P(Normalized Intensity Values)', fontdict = {'fontsize' : 16})
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
     plt.subplots_adjust(bottom=0.15)
-    plt.show()
+    plt.tight_layout()
+    plt.savefig('{}/{}_G_Channel_Histogram.png'.format(args.supplemental,Params['Dataset']))
     
     plt.figure()
     plt.hist([np.concatenate(B_pos, axis=0), np.concatenate(B_neg, axis=0)], num_bins, 
              density=show_density, label=[pos_class_name, 'Background'])
     plt.title('Blue Channel Intensity Histogram', fontdict = {'fontsize' : 20})
-    plt.legend(loc='upper right', prop={'size': 14})
+    plt.legend(loc='upper left', prop={'size': 14})
     plt.xlabel('Normalized Intensity Values', fontdict = {'fontsize' : 16})
     plt.ylabel('P(Normalized Intensity Values)', fontdict = {'fontsize' : 16})
     plt.xticks(fontsize=16)
     plt.yticks(fontsize=16)
     plt.subplots_adjust(bottom=0.15)
-    plt.show()
+    plt.savefig('{}/{}_B_Channel_Histogram.png'.format(args.supplemental,Params['Dataset']))
+    
+    #Return image list
+    return img_list
     
        
 def parse_args():
     parser = argparse.ArgumentParser(description='Run segmentation models for dataset')
+    parser.add_argument('--save_results', type=bool, default=True,
+                        help='Save results of experiments(default: True')
+    parser.add_argument('--save_cp', type=bool, default=False,
+                        help='Save results of experiments at each checkpoint (default: False)')
+    parser.add_argument('--save_epoch', type=int, default=5,
+                        help='Epoch for checkpoint (default: 5')
     parser.add_argument('--folder', type=str, default='Saved_Models/',
                         help='Location to save models')
     parser.add_argument('--model', type=str, default='JOSHUA+',
@@ -216,9 +245,23 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
+    
+    #Create supplemental figures folder
+    supplemental_figs = 'Supplemental Figures/'
+    if not os.path.exists(supplemental_figs):
+        os.makedirs(supplemental_figs)
 
+    args = parse_args()
+    setattr(args, 'supplemental', supplemental_figs)
     params = Parameters(args)
-    main(params,args)
-    model_count += 1
-    print('Finished Model {} of {}'.format(model_count,len(model_list)))
-        
+    
+    #Generate figures
+    imgs = main(params,args)
+    
+    if args.data_selection == 1:
+        df = pd.DataFrame(imgs,columns=['Images','Fat Percentage'])
+        writer = pd.ExcelWriter('{}/{}_Adipose_Poor_Samples.xlsx'.format(args.supplemental,
+                                                                         params['Dataset']),
+                                                                  engine='xlsxwriter')
+        df.to_excel(writer,index=False)
+        writer.save()

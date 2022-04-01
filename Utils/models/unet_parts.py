@@ -49,7 +49,6 @@ class Up(nn.Module):
 
         self.use_attention = use_attention
         # if bilinear, use the normal convolutions to reduce the number of channels
-        # if bilinear, use the normal convolutions to reduce the number of channels
         if bilinear:
             self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
             if self.use_attention:
@@ -80,6 +79,8 @@ class Up(nn.Module):
             x = x2*x1
         else:
             x = torch.cat([x2, x1], dim=1)
+            
+     
         return self.conv(x)
 
 

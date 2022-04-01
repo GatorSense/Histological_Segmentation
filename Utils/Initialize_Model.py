@@ -14,7 +14,7 @@ from .models.unet_model import UNet
 from .models.attention_unet_model import AttUNet
 
        
-def initialize_model(model_name, num_classes,Network_parameters):
+def initialize_model(model_name, num_classes,Network_parameters,analyze=False):
  
     #Generate segmentation model 
     if (model_name == 'JOSHUA') or (model_name == 'JOSHUA+'):
@@ -29,14 +29,16 @@ def initialize_model(model_name, num_classes,Network_parameters):
                              pool_locations=Network_parameters['pool_locations'],
                              use_attention=Network_parameters['use_attention'],
                              feature_extraction=Network_parameters['feature_extraction'],
-                             add_bn=Network_parameters['add_bn'])
+                             add_bn=Network_parameters['add_bn'],
+                             analyze=analyze)
             
     #Base UNET model or UNET+ (our version of attention)
     elif (model_name == 'UNET') or (model_name == 'UNET+'): 
         model = UNet(Network_parameters['channels'],num_classes,
                      bilinear = Network_parameters['bilinear'],
                      feature_extraction = Network_parameters['feature_extraction'],
-                     use_attention=Network_parameters['use_attention'])
+                     use_attention=Network_parameters['use_attention'],
+                     analyze=analyze)
     
     #Attetion UNET model introduced in 2018
     elif model_name == 'Attention_UNET':

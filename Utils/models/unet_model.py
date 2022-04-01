@@ -16,12 +16,14 @@ def set_parameter_requires_grad(model, feature_extraction):
 
 class UNet(nn.Module):
     def __init__(self, n_channels, n_classes, bilinear=True,
-                 feature_extraction = False, use_attention = False):
+                 feature_extraction = False, use_attention = False,
+                 analyze=False):
         super(UNet, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.bilinear = bilinear
         self.use_attention = use_attention
+        self.analyze = analyze
         factor = 2 if bilinear else 1
 
         self.inc = DoubleConv(n_channels, 64)
@@ -47,4 +49,8 @@ class UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         logits = self.outc(x)
-        return logits
+        
+        if self.analyze:
+            return (logits, logits, torch.sigmoid(logits))
+        else:
+            return logits

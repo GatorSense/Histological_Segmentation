@@ -105,10 +105,11 @@ class UpHist(nn.Module):
 
     def __init__(self, in_channels, out_channels, num_bins,bilinear=True,
                  normalize_count=True,normalize_bins = True,use_hist=True,
-                 up4=False,use_attention=False,add_bn=False):
+                 up4=False,use_attention=False,add_bn=False,analyze=False):
         super().__init__()
 
         self.use_attention = use_attention
+        self.analyze = analyze
         # if bilinear, use the normal convolutions to reduce the number of channels
         if bilinear:
             self.up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
@@ -188,7 +189,12 @@ class UpHist(nn.Module):
             x = x2*x1
         else:
             x = torch.cat([x2, x1], dim=1)
-        return self.conv(x)
+            
+        if self.analyze:
+            return x2, self.conv(x)
+        
+        else:
+            return self.conv(x)
 
 
 class OutConv(nn.Module):

@@ -9,4 +9,14 @@ New_Metrics/
 Saved_Models/
 HPG_code/
 
+# Ignore statisitcal analysis figures
+Generate_Statistical_Figure.py
+Utils/Stats_Analysis/
+
+# Ignore supplemental figures
+Supplemental Figures/
+
+
+
+
 
