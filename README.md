@@ -10,6 +10,8 @@ Jonathan M. Grasman, Whitney Stoppel, and Alina Zare.
 Zendo. https://doi.org/10.5281/zenodo.5722339
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5722339.svg)](https://doi.org/10.5281/zenodo.5722339)
 
+[[`BMEF`](https://spj.sciencemag.org/journals/bmef/2022/9854084/)]
+
 [[`bioRxiv`](https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463)]
 
 [[`BibTeX`](#CitingHist)]
@@ -107,22 +109,18 @@ following entry.
 
 **Plain Text:**
 
-Peeples, J. K., Jameson, J. F., Kotta, N. M., Grasman, J. M., Stoppel, W. L., & Zare, A. Jointly 
-Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue 
-Segmentation. bioRxiv, 2021. doi: 10.1101/2021.11.22.469463.  
+J. Peeples, J. Jameson, N. Kotta, J. Grasman, W. Stoppel, and A. Zare, “Jointly Optimized Spatial Histogram UNET
+Architecture (JOSHUA) for Adipose Tissue Segmentation,” in BME Frontiers, vol. 2022, doi: 10.34133/2022/9854084.
 
 **BibTex:**
 ```
-@article {Peeples2021jointly,
-	author = {Peeples, Joshua K and Jameson, Julie F and Kotta, Nisha M and Grasman, Jonathan M and Stoppel, Whitney L and Zare, Alina},
-	title = {Jointly Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue Segmentation},
-	elocation-id = {2021.11.22.469463},
-	year = {2021},
-	doi = {10.1101/2021.11.22.469463},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463},
-	eprint = {https://www.biorxiv.org/content/early/2021/11/23/2021.11.22.469463.full.pdf},
-	journal = {bioRxiv}
+@article{peeples2022jointly,
+  title={Jointly Optimized Spatial Histogram UNET Architecture (JOSHUA) for Adipose Tissue Segmentation},
+  author={Peeples, Joshua K and Jameson, Julie F and Kotta, Nisha M and Grasman, Jonathan M and Stoppel, Whitney L and Zare, Alina},
+  journal={BME Frontiers},
+  volume={2022},
+  year={2022},
+  publisher={AAAS}
 }
 ```
 
