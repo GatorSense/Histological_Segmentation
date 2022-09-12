@@ -8,7 +8,7 @@ on the webpages and provided here.
 
 ##  Silk Fibroin Biomaterial Histology Images (SFBHI) [[`BibTeX`](#CitingSFBHI)]
 
-Please download the [`SFBHI_dataset`](https://drive.google.com/drive/folders/1ZYGR7HxrJFIk5V9UIUYWWjcJuAyYkMxA?usp=sharing) 
+Please download the [`SFBHI_dataset`](https://drive.google.com/drive/folders/1Csqh6W_i-7vbHiS6_9shZj-4a0M-qVsZ?usp=sharing) 
 and follow these instructions:
 
 1. Download and unzip the folder `SFBHI` (Note: this folder contains the 
