@@ -77,6 +77,7 @@ https://github.com/GatorSense/Histological_Segmentation
         ├── Create_Fat_Spreadsheet.py  // Create spreadsheet of estimated adipose tissue.
         ├── create_individual_RGB_figures.py  // Create figures to display segmentation results.
         ├── dataset.py  // Load training, validation, and test splits.
+        ├── decode_segmentation.py  // Generate colors for output segmentation maps (for multi-class segmentation only).
         ├── eval.py  // Evaluate models on validation and test data.
         ├── functional.py  // Contains functions to compute evaluation metrics.
         ├── Initialize_Model.py  // Initialize segmentation model(s).
